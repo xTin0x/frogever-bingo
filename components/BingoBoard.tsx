@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toBlob } from "html-to-image";
 
 // Define the two Bingo boards
@@ -327,7 +327,7 @@ export default function BingoBoard() {
       >
         Reset Board
       </button>
-      
+
       {/* Copy screenshot button */}
       <button
         onClick={copyScreenshot}
