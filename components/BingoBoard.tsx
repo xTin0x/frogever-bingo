@@ -287,7 +287,7 @@ export default function BingoBoard() {
       </div>
 
       {/* Bingo grid */}
-      <div className="grid grid-cols-3 gap-3 w-full max-w-md">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
 
         {tasks.map((task, index) => (
           <button
@@ -295,15 +295,18 @@ export default function BingoBoard() {
             onClick={() => toggleSquare(index)}
             aria-pressed={selected[index]}
             className={`
-              aspect-square rounded-xl p-3
-              flex items-center justify-center
-              text-sm sm:text-base font-semibold
-              border-2 transition-all
-              ${
-                selected[index]
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400"
-              }
+                w-full min-w-0 aspect-square
+                rounded-lg sm:rounded-xl
+                p-1.5 sm:p-3
+                flex items-center justify-center
+                text-center text-xs sm:text-sm md:text-base
+                font-semibold break-words
+                border-2 transition-all
+                ${
+                  selected[index]
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400"
+                }
             `}
           >
             {task}
