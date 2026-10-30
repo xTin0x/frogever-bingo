@@ -176,7 +176,7 @@ export default function BingoBoard() {
       ]);
 
       setCopyMessage(
-        "Screenshot copied! Paste it wherever you like. 🎉"
+        "Screenshot copied! Send it to the frog discord server to report your weekly results and add them to the leaderboards."
       );
     } catch (error) {
       console.error("Screenshot copy failed:", error);
