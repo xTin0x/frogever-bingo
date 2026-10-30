@@ -290,31 +290,40 @@ export default function BingoBoard() {
       <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
 
         {tasks.map((task, index) => (
-          <button
-            key={index}
-            onClick={() => toggleSquare(index)}
-            aria-pressed={selected[index]}
-            className={`
-        w-full aspect-[1/1] min-w-0 min-h-0
-        box-border overflow-hidden
-        rounded-lg sm:rounded-xl
-        p-2
-        flex items-center justify-center
-        text-center text-xs sm:text-sm
-        font-semibold
-        border-2 transition-colors
-        ${
-          selected[index]
-            ? "bg-indigo-600 text-white border-indigo-600"
-            : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400"
-        }
-      `}
-    >
-      <span className="w-full break-words leading-tight">
-        {task}
-      </span>
-          </button>
-        ))}
+        <button
+          key={index}
+          onClick={() => toggleSquare(index)}
+          aria-pressed={selected[index]}
+          className={`
+            w-full aspect-square min-w-0
+            box-border overflow-hidden
+            rounded-lg sm:rounded-xl
+            p-1 sm:p-2
+            flex items-center justify-center
+            text-center
+            border-2 transition-colors
+            ${
+              selected[index]
+                ? "bg-indigo-600 text-white border-indigo-600"
+                : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400"
+            }
+          `}
+        >
+          <span
+            className="
+              block w-full
+              text-[clamp(9px,2.5vw,16px)]
+              leading-tight
+              font-semibold
+              text-center
+              break-words
+              overflow-hidden
+            "
+          >
+            {task}
+          </span>
+        </button>
+      ))}
 
       </div>
 
