@@ -139,7 +139,7 @@ export default function BingoBoard() {
     return (
       <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
 
-        <h1 className="text-3xl-green-800 font-bold mb-3">
+        <h1 className="text-3xl font-bold mb-3">
           frog Weekly Bingo
         </h1>
 
