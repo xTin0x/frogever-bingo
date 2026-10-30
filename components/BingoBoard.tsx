@@ -195,11 +195,12 @@ export default function BingoBoard() {
       <main className="min-h-screen bg-[#10251B] flex flex-col items-center justify-center p-6">
 
         <h1 className="text-3xl font-bold mb-3">
-          frog Weekly Bingo
+          🐸 frog Weekly Bingo 🐸
         </h1>
 
         <p className="text-gray-50 mb-8">
-          Choose a board to see tasks. Complete all the tasks in a line/column/diagonal to earn points. Clear the board for bonus points.
+          Complete tasks in 2 weekly bingo boards to earn points for the leaderboards. Complete 3 tasks in a line to earn 1 point. Clear the board for 2 bonus points - totaling 10 points per board.
+          Select a board:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
@@ -352,7 +353,7 @@ export default function BingoBoard() {
           disabled={copying}
           className="w-full px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50"
         >
-          {copying ? "Copying..." : "📋 Copy Screenshot"}
+          {copying ? "Copying..." : "📸📋 Copy Screenshot"}
         </button>
 
         {/* Copy status */}
