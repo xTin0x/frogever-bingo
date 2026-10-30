@@ -94,7 +94,7 @@ export default function BingoBoard() {
           setProgress(parsed as Progress);
         }
       } catch {
-        console.error("Could not load saved Bingo progress.");
+        console.error("Error loading past progress");
       }
     }
   }, []);
@@ -139,12 +139,12 @@ export default function BingoBoard() {
     return (
       <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
 
-        <h1 className="text-3xl font-bold mb-3">
-          Bingo Board
+        <h1 className="text-3xl-green-800 font-bold mb-3">
+          frog Weekly Bingo
         </h1>
 
         <p className="text-gray-500 mb-8">
-          Choose your board to get started.
+          Choose a board to see tasks. Complete all the tasks in a line/column/diagonal to earn points. Clear the board for bonus points.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
@@ -156,7 +156,7 @@ export default function BingoBoard() {
               <button
                 key={id}
                 onClick={() => setSelectedBoard(id)}
-                className="p-6 bg-white border-2 border-gray-200 rounded-xl text-left hover:border-indigo-500 transition-all"
+                className="p-6 bg-white border-2 border-green-800 rounded-xl text-left hover:border-indigo-500 transition-all"
               >
                 <h2 className="text-xl font-bold mb-2">
                   {boards[id].title}
@@ -205,7 +205,7 @@ export default function BingoBoard() {
       </button>
 
       {/* Title */}
-      <h1 className="text-3xl font-bold mb-6">
+      <h1 className="text-3xl-green-800 font-bold mb-6">
         {boards[selectedBoard].title}
       </h1>
 
@@ -215,7 +215,7 @@ export default function BingoBoard() {
           SCORE
         </p>
 
-        <p className="text-5xl font-black">
+        <p className="text-5xl-green-800 font-black">
           {score}
         </p>
 
