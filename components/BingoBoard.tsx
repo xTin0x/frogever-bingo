@@ -198,7 +198,7 @@ export default function BingoBoard() {
           🐸 frog Weekly Bingo 🐸
         </h1>
 
-        <p className="text-gray-50 mb-8">
+        <p className="text-gray-50 mb-8 justify-center">
           Complete tasks in 2 weekly bingo boards to earn points for the leaderboards. Complete 3 tasks in a line to earn 1 point. Clear the board for 2 bonus points - totaling 10 points per board.
           <br/>Select a board:
         </p>
