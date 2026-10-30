@@ -198,7 +198,7 @@ export default function BingoBoard() {
           frog Weekly Bingo
         </h1>
 
-        <p className="text-gray-500 mb-8">
+        <p className="text-gray-50 mb-8">
           Choose a board to see tasks. Complete all the tasks in a line/column/diagonal to earn points. Clear the board for bonus points.
         </p>
 
@@ -213,11 +213,11 @@ export default function BingoBoard() {
                 onClick={() => setSelectedBoard(id)}
                 className="p-6 bg-white border-2 border-green-800 rounded-xl text-left hover:border-indigo-500 transition-all"
               >
-                <h2 className="text-xl font-bold mb-2">
+                <h2 className="text-xl text-gray-600 font-bold mb-2">
                   {boards[id].title}
                 </h2>
 
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-300 mb-4">
                   {boards[id].description}
                 </p>
 
@@ -254,7 +254,7 @@ export default function BingoBoard() {
       {/* Navigation */}
       <button
         onClick={backToSelection}
-        className="mb-6 text-sm text-gray-500 hover:text-indigo-600"
+        className="mb-6 text-sm text-gray-50 hover:text-indigo-600"
       >
         ← Back to boards
       </button>
@@ -272,7 +272,7 @@ export default function BingoBoard() {
 
       {/* Score counter */}
       <div className="mb-6 text-center">
-        <p className="text-sm text-gray-500 font-medium">
+        <p className="text-sm text-gray-50 font-medium">
           SCORE
         </p>
 
@@ -280,7 +280,7 @@ export default function BingoBoard() {
           {score}
         </p>
 
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm text-gray-50 mt-2">
           {completedLines} completed lines
           {boardCompleted && " + 2 bonus points"}
         </p>
