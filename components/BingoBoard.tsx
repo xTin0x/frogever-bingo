@@ -216,18 +216,20 @@ export default function BingoBoard() {
                 onClick={() => setSelectedBoard(id)}
                 className={`p-6 border-2 rounded-xl text-left transition-all ${
                   completed === 9
-                    ? "bg-indigo-500 border-indigo-500 hover:border-green-800"
+                    ? "bg-indigo-500 border-indigo-200 hover:border-green-800"
                     : "bg-green-100 border-green-800 hover:border-indigo-500"
                 }`}
               >
-                <h2 className="text-xl text-gray-600 font-bold mb-2">
+                <h2 className={`"text-xl font-bold mb-2 ${
+                  completed === 9 ? "text-indigo-800" : "text-gray-600"
+                }`}>
                   {boards[id].title}
                 </h2>
 
                 <p className="text-sm text-gray-400 mb-4">
                   {boards[id].description}
                 </p>
-                
+
                 <p className={`text-sm font-medium ${
                   completed === 9 ? "text-green-100" : "text-indigo-600"
                 }`}>
