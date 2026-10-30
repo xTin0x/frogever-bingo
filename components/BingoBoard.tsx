@@ -150,7 +150,7 @@ export default function BingoBoard() {
       // Generate screenshot as PNG
       const blob = await toBlob(boardRef.current, {
         pixelRatio: 2,
-        backgroundColor: "#f9fafb",
+        backgroundColor: "#10251B",
         cacheBust: true,
       });
 
@@ -192,7 +192,7 @@ export default function BingoBoard() {
   // Board selection screen
   if (!selectedBoard) {
     return (
-      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      <main className="min-h-screen bg-[#10251B] flex flex-col items-center justify-center p-6">
 
         <h1 className="text-3xl font-bold mb-3">
           frog Weekly Bingo
@@ -249,7 +249,7 @@ export default function BingoBoard() {
   const score = completedLines + (boardCompleted ? 2 : 0);
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6">
+    <main className="min-h-screen bg-[#10251B] flex flex-col items-center justify-center p-4 sm:p-6">
 
       {/* Navigation */}
       <button
@@ -262,7 +262,7 @@ export default function BingoBoard() {
       {/*Screenshot Area */}
       <div 
         ref={boardRef}
-        className="w-full max-w-[640px] bg-gray-50 p-4 sm:p-6 rounded-x1"
+        className="w-full max-w-[640px] bg-[#10251B] p-4 sm:p-6 rounded-x1"
       >
 
       {/* Title */}
