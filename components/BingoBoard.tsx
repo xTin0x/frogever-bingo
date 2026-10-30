@@ -3,6 +3,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toBlob } from "html-to-image";
 
 // Define the two Bingo boards
 const boards = {
@@ -62,6 +63,10 @@ const initialProgress: Progress = {
 };
 
 export default function BingoBoard() {
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [copying, setCopying] = useState(false);
+  const [copyMessage, setCopyMessage] = useState("");
+
   // Currently selected board
   const [selectedBoard, setSelectedBoard] =
     useState<BoardId | null>(null);
@@ -134,6 +139,56 @@ export default function BingoBoard() {
     setSelectedBoard(null);
   }
 
+  // Copy screenshot to clipboard
+  async function copyScreenshot() {
+    if (!boardRef.current) return;
+
+    try {
+      setCopying(true);
+      setCopyMessage("");
+
+      // Generate screenshot as PNG
+      const blob = await toBlob(boardRef.current, {
+        pixelRatio: 2,
+        backgroundColor: "#f9fafb",
+        cacheBust: true,
+      });
+
+      if (!blob) {
+        throw new Error("Could not generate screenshot.");
+      }
+
+      // Check clipboard support
+      if (
+        !navigator.clipboard ||
+        typeof ClipboardItem === "undefined"
+      ) {
+        throw new Error(
+          "Image clipboard is not supported by this browser."
+        );
+      }
+
+      // Copy image to clipboard
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": blob,
+        }),
+      ]);
+
+      setCopyMessage(
+        "Screenshot copied! Paste it wherever you like. 🎉"
+      );
+    } catch (error) {
+      console.error("Screenshot copy failed:", error);
+
+      setCopyMessage(
+        "Could not copy screenshot. Check browser permissions."
+      );
+    } finally {
+      setCopying(false);
+    }
+  }
+
   // Board selection screen
   if (!selectedBoard) {
     return (
@@ -204,6 +259,12 @@ export default function BingoBoard() {
         ← Back to boards
       </button>
 
+      {/*Screenshot Area */}
+      <div 
+        ref={boardRef}
+        className="w-full max-w-md bg-gray-50 p-6 rounded-x1"
+      >
+
       {/* Title */}
       <h1 className="text-3xl font-bold mb-6">
         {boards[selectedBoard].title}
@@ -257,6 +318,7 @@ export default function BingoBoard() {
           🎉 Bingo! Board completed!
         </p>
       )}
+      </div>
 
       {/* Reset button */}
       <button
@@ -265,6 +327,22 @@ export default function BingoBoard() {
       >
         Reset Board
       </button>
+      
+      {/* Copy screenshot button */}
+      <button
+        onClick={copyScreenshot}
+        disabled={copying}
+        className="mt-3 px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+      >
+        {copying ? "Copying..." : "📋 Copy Screenshot"}
+      </button>
+
+      {/* Copy status */}
+      {copyMessage && (
+        <p className="mt-3 text-sm text-center text-gray-600">
+          {copyMessage}
+        </p>
+      )}
 
     </main>
   );
