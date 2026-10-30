@@ -262,7 +262,7 @@ export default function BingoBoard() {
       {/*Screenshot Area */}
       <div 
         ref={boardRef}
-        className="w-full max-w-[480px] bg-gray-50 p-4 sm:p-6 rounded-x1"
+        className="w-full max-w-[640px] bg-gray-50 p-4 sm:p-6 rounded-x1"
       >
 
       {/* Title */}
@@ -327,7 +327,7 @@ export default function BingoBoard() {
       </div>
 
       {/* Action buttons */}
-      <div className="w-full max-w-[480px] flex flex-col gap-3 mt-6">
+      <div className="w-full max-w-[640px] flex flex-col gap-3 mt-6">
 
         {/* Reset button */}
         <button
