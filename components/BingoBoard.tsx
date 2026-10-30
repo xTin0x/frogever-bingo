@@ -205,7 +205,7 @@ export default function BingoBoard() {
       </button>
 
       {/* Title */}
-      <h1 className="text-3xl-green-800 font-bold mb-6">
+      <h1 className="text-3xl font-bold mb-6">
         {boards[selectedBoard].title}
       </h1>
 
@@ -215,7 +215,7 @@ export default function BingoBoard() {
           SCORE
         </p>
 
-        <p className="text-5xl-green-800 font-black">
+        <p className="text-5xl font-black">
           {score}
         </p>
 
