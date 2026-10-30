@@ -295,21 +295,24 @@ export default function BingoBoard() {
             onClick={() => toggleSquare(index)}
             aria-pressed={selected[index]}
             className={`
-                w-full min-w-0 aspect-square
-                rounded-lg sm:rounded-xl
-                p-1.5 sm:p-3
-                flex items-center justify-center
-                text-center text-xs sm:text-sm md:text-base
-                font-semibold break-words
-                border-2 transition-all
-                ${
-                  selected[index]
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400"
-                }
-            `}
-          >
-            {task}
+        w-full aspect-[1/1] min-w-0 min-h-0
+        box-border overflow-hidden
+        rounded-lg sm:rounded-xl
+        p-2
+        flex items-center justify-center
+        text-center text-xs sm:text-sm
+        font-semibold
+        border-2 transition-colors
+        ${
+          selected[index]
+            ? "bg-indigo-600 text-white border-indigo-600"
+            : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400"
+        }
+      `}
+    >
+      <span className="w-full break-words leading-tight">
+        {task}
+      </span>
           </button>
         ))}
 
