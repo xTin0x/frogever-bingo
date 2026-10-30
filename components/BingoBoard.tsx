@@ -200,7 +200,7 @@ export default function BingoBoard() {
 
         <p className="text-gray-50 mb-8">
           Complete tasks in 2 weekly bingo boards to earn points for the leaderboards. Complete 3 tasks in a line to earn 1 point. Clear the board for 2 bonus points - totaling 10 points per board.
-          Select a board:
+          \nSelect a board:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
