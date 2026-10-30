@@ -216,8 +216,8 @@ export default function BingoBoard() {
                 onClick={() => setSelectedBoard(id)}
                 className={`p-6 border-2 rounded-xl text-left transition-all ${
                   completed === 9
-                    ? "bg-indigo-500 border-indigo-200 hover:border-green-800"
-                    : "bg-green-100 border-green-800 hover:border-indigo-500"
+                    ? "bg-indigo-500 border-[#ffd700] hover:border-indigo-200"
+                    : "bg-green-100 border-green-800 hover:border-indigo-500 hover:bg-green-200"
                 }`}
               >
                 <h2 className={`"text-xl font-bold mb-2 ${
@@ -231,7 +231,7 @@ export default function BingoBoard() {
                 </p>
 
                 <p className={`text-sm font-medium ${
-                  completed === 9 ? "text-green-100" : "text-indigo-600"
+                  completed === 9 ? "text-[#ffd700]" : "text-indigo-600"
                 }`}>
                   {completed}/9 squares completed
                 </p>
