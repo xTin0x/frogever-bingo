@@ -249,7 +249,7 @@ export default function BingoBoard() {
   const score = completedLines + (boardCompleted ? 2 : 0);
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6">
 
       {/* Navigation */}
       <button
@@ -262,11 +262,11 @@ export default function BingoBoard() {
       {/*Screenshot Area */}
       <div 
         ref={boardRef}
-        className="w-full max-w-md bg-gray-50 p-6 rounded-x1"
+        className="w-full max-w-[480px] bg-gray-50 p-4 sm:p-6 rounded-x1"
       >
 
       {/* Title */}
-      <h1 className="text-3xl font-bold mb-6">
+      <h1 className="text-2xl sm:text-3x1 font-bold mb-6 text-center">
         {boards[selectedBoard].title}
       </h1>
 
@@ -276,7 +276,7 @@ export default function BingoBoard() {
           SCORE
         </p>
 
-        <p className="text-5xl font-black">
+        <p className="text-4xl font-black">
           {score}
         </p>
 
@@ -317,35 +317,40 @@ export default function BingoBoard() {
 
       {/* Completion message */}
       {boardCompleted && (
-        <p className="mt-5 text-lg font-bold text-indigo-600">
+        <p className="mt-5 text-base sm:text-lg font-bold text-indigo-600 text-center">
           🎉 Bingo! Board completed!
         </p>
       )}
       </div>
 
-      {/* Reset button */}
-      <button
-        onClick={resetBoard}
-        className="mt-6 px-6 py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 transition-colors"
-      >
-        Reset Board
-      </button>
+      {/* Action buttons */}
+      <div className="w-full max-w-[480px] flex flex-col gap-3 mt-6">
 
-      {/* Copy screenshot button */}
-      <button
-        onClick={copyScreenshot}
-        disabled={copying}
-        className="mt-3 px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50"
-      >
-        {copying ? "Copying..." : "📋 Copy Screenshot"}
-      </button>
+        {/* Reset button */}
+        <button
+          onClick={resetBoard}
+          className="w-full px-6 py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 transition-colors"
+        >
+          Reset Board
+        </button>
 
-      {/* Copy status */}
-      {copyMessage && (
-        <p className="mt-3 text-sm text-center text-gray-600">
-          {copyMessage}
-        </p>
-      )}
+        {/* Copy screenshot button */}
+        <button
+          onClick={copyScreenshot}
+          disabled={copying}
+          className="w-full px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+        >
+          {copying ? "Copying..." : "📋 Copy Screenshot"}
+        </button>
+
+        {/* Copy status */}
+        {copyMessage && (
+          <p className="text-sm text-center text-gray-600">
+            {copyMessage}
+          </p>
+        )}
+
+      </div>
 
     </main>
   );
