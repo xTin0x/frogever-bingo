@@ -16,7 +16,7 @@ bun dev
 
 ## Weekly board administration
 
-Set `BINGO_ADMIN_USER_ID` to the Discord user ID allowed to publish weekly board tasks. After authenticating as that user, send a `POST` request to `/api/admin/boards` with a current or future week ID and nine tasks for each board:
+Set `BINGO_ADMIN_USER_IDS` to a comma-separated list of Discord user IDs allowed to publish weekly board tasks. The existing singular `BINGO_ADMIN_USER_ID` variable is still accepted for compatibility. After authenticating as one of those users, open `/admin` or send a `POST` request to `/api/admin/boards` with a current or future week ID and nine tasks for each board:
 
 ```json
 {

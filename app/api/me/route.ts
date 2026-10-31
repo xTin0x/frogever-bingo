@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getWeekId, isWeekId } from "@/lib/bingo";
 import { getLifetimeTotal, getWeeklyScore } from "@/lib/db";
+import { isBingoAdminUser } from "@/lib/env";
 import { decodeSession, SESSION_COOKIE } from "@/lib/session";
 
 export async function GET(request: Request) {
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
 
   if (!session) {
     return NextResponse.json(
-      { user: null, weekId, submission: null, lifetimeTotal: 0 },
+      { user: null, weekId, submission: null, lifetimeTotal: 0, isAdmin: false },
       { headers }
     );
   }
@@ -41,6 +42,7 @@ export async function GET(request: Request) {
         weekId,
         submission,
         lifetimeTotal,
+        isAdmin: isBingoAdminUser(session.discordUserId),
       },
       { headers }
     );

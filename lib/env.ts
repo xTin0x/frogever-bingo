@@ -42,8 +42,29 @@ export function getSessionSecret(): string {
   return secret;
 }
 
-export function getBingoAdminUserId(): string {
-  return required("BINGO_ADMIN_USER_ID");
+export function getBingoAdminUserIds(): string[] {
+  const configured =
+    process.env.BINGO_ADMIN_USER_IDS?.trim() ??
+    process.env.BINGO_ADMIN_USER_ID?.trim();
+  if (!configured) {
+    throw new Error(
+      "Missing required environment variable: BINGO_ADMIN_USER_IDS"
+    );
+  }
+
+  const userIds = configured.split(",").map((userId) => userId.trim()).filter(Boolean);
+  if (userIds.length === 0) {
+    throw new Error("BINGO_ADMIN_USER_IDS must contain at least one user ID");
+  }
+  return userIds;
+}
+
+export function isBingoAdminUser(userId: string): boolean {
+  try {
+    return getBingoAdminUserIds().includes(userId);
+  } catch {
+    return false;
+  }
 }
 
 export function getRedirectUri(request: Request): string {

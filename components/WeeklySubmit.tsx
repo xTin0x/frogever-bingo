@@ -17,6 +17,7 @@ type MeResponse = {
     total_score: number;
   } | null;
   lifetimeTotal: number;
+  isAdmin: boolean;
   error?: string;
 };
 
@@ -200,6 +201,14 @@ export default function WeeklySubmit({
           >
             Disconnect Discord
           </button>
+          {me.isAdmin && (
+            <a
+              href="/admin"
+              className="text-sm text-indigo-300 hover:text-indigo-200 text-center"
+            >
+              Open board admin
+            </a>
+          )}
         </div>
       ) : (
         <a

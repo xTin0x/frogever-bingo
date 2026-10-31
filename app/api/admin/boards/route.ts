@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getBingoAdminUserId } from "@/lib/env";
+import { getBingoAdminUserIds } from "@/lib/env";
 import { getWeekId, isBoardTasks, isWeekId } from "@/lib/bingo";
 import { saveWeeklyBoard } from "@/lib/db";
 import { getSession } from "@/lib/session";
@@ -10,9 +10,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
 
-  let adminUserId: string;
+  let adminUserIds: string[];
   try {
-    adminUserId = getBingoAdminUserId();
+    adminUserIds = getBingoAdminUserIds();
   } catch {
     return NextResponse.json(
       { error: "Board administration is not configured." },
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (session.discordUserId !== adminUserId) {
+  if (!adminUserIds.includes(session.discordUserId)) {
     return NextResponse.json({ error: "Not authorized." }, { status: 403 });
   }
 
