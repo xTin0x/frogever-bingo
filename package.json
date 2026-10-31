@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
     "html-to-image": "^1.11.13",
     "next": "16.4.3",
     "react": "19.3.0",
