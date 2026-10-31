@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWeekId, isWeekId } from "@/lib/bingo";
+import { getWeekId, isWeekId, isWeekReadable } from "@/lib/bingo";
 import { getWeeklyBoard } from "@/lib/db";
 
 export async function GET(request: Request) {
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     );
   }
 
-  if (weekId > currentWeekId) {
+  if (!isWeekReadable(weekId)) {
     return NextResponse.json(
       { error: "That week's tasks are not available yet." },
       { status: 404, headers }

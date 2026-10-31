@@ -137,6 +137,16 @@ export async function getWeeklyScore(
   return (rows[0] as WeeklyScore | undefined) ?? null;
 }
 
+export async function getLifetimeTotal(discordUserId: string): Promise<number> {
+  await ensureSchema();
+  const rows = await sql()`
+    SELECT COALESCE(SUM(total_score), 0)::INTEGER AS lifetime_total
+    FROM weekly_scores
+    WHERE discord_user_id = ${discordUserId}
+  `;
+  return Number(rows[0]?.lifetime_total ?? 0);
+}
+
 export async function upsertWeeklyScore(input: {
   discordUserId: string;
   username: string;

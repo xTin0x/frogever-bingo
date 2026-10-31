@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getWeekId, isWeekId } from "@/lib/bingo";
-import { getWeeklyScore } from "@/lib/db";
+import { getLifetimeTotal, getWeeklyScore } from "@/lib/db";
 import { decodeSession, SESSION_COOKIE } from "@/lib/session";
 
 export async function GET(request: Request) {
@@ -22,13 +22,14 @@ export async function GET(request: Request) {
 
   if (!session) {
     return NextResponse.json(
-      { user: null, weekId, submission: null },
+      { user: null, weekId, submission: null, lifetimeTotal: 0 },
       { headers }
     );
   }
 
   try {
     const submission = await getWeeklyScore(session.discordUserId, weekId);
+    const lifetimeTotal = await getLifetimeTotal(session.discordUserId);
     return NextResponse.json(
       {
         user: {
@@ -39,6 +40,7 @@ export async function GET(request: Request) {
         },
         weekId,
         submission,
+        lifetimeTotal,
       },
       { headers }
     );

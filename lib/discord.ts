@@ -92,6 +92,7 @@ export async function postSubmissionWebhook(input: {
   board1Score: number;
   board2Score: number;
   totalScore: number;
+  lifetimeTotal: number;
   updated: boolean;
 }): Promise<boolean> {
   const { webhookUrl } = getDiscordConfig();
@@ -121,6 +122,11 @@ export async function postSubmissionWebhook(input: {
             {
               name: "Total",
               value: `**${input.totalScore} / 20**`,
+              inline: true,
+            },
+            {
+              name: "Lifetime Total",
+              value: `**${input.lifetimeTotal}**`,
               inline: true,
             },
           ],

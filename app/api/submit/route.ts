@@ -7,7 +7,11 @@ import {
   isWeekId,
   isWeekStarted,
 } from "@/lib/bingo";
-import { getWeeklyBoard, upsertWeeklyScore } from "@/lib/db";
+import {
+  getLifetimeTotal,
+  getWeeklyBoard,
+  upsertWeeklyScore,
+} from "@/lib/db";
 import { postSubmissionWebhook } from "@/lib/discord";
 import { decodeSession, SESSION_COOKIE } from "@/lib/session";
 
@@ -89,6 +93,7 @@ export async function POST(request: Request) {
       totalScore,
       progress,
     });
+    const lifetimeTotal = await getLifetimeTotal(session.discordUserId);
 
     const discordPosted = await postSubmissionWebhook({
       displayName: session.displayName,
@@ -97,6 +102,7 @@ export async function POST(request: Request) {
       board1Score,
       board2Score,
       totalScore,
+      lifetimeTotal,
       updated,
     });
 

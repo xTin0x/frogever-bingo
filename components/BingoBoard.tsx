@@ -8,11 +8,13 @@ import {
   boards,
   boardScore,
   completedLineCount,
+  FIRST_WEEK_ID,
   formatWeekLabel,
   getWeekId,
   initialProgress,
   isBoardTasks,
   isProgress,
+  isWeekReadable,
   isWeekStarted,
   STORAGE_KEY,
   type BoardId,
@@ -143,7 +145,10 @@ export default function BingoBoard() {
     setSelectedWeekId((weekId) => {
       if (!weekId) return weekId;
       const nextWeekId = addWeeks(weekId, amount);
-      return nextWeekId > currentWeekId ? weekId : nextWeekId;
+      if (nextWeekId < FIRST_WEEK_ID || !isWeekReadable(nextWeekId)) {
+        return weekId;
+      }
+      return nextWeekId;
     });
   }
 
@@ -282,6 +287,7 @@ export default function BingoBoard() {
           progress={progress}
           weekId={selectedWeekId}
           locked={locked}
+          previewOnly={selectedWeekId > currentWeekId}
         />
       </main>
     );
@@ -417,7 +423,8 @@ function WeekSelector({
           type="button"
           aria-label="Previous week"
           onClick={() => onChange(-1)}
-          className="h-10 w-10 rounded-lg bg-gray-900 text-xl hover:bg-gray-700"
+          disabled={selectedWeekId <= FIRST_WEEK_ID}
+          className="h-10 w-10 rounded-lg bg-gray-900 text-xl hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           ←
         </button>
@@ -431,7 +438,7 @@ function WeekSelector({
         <button
           type="button"
           aria-label="Next week"
-          disabled={selectedWeekId >= currentWeekId}
+          disabled={!isWeekReadable(addWeeks(selectedWeekId, 1))}
           onClick={() => onChange(1)}
           className="h-10 w-10 rounded-lg bg-gray-900 text-xl hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
         >

@@ -15,6 +15,7 @@ type MeResponse = {
     board2_score: number;
     total_score: number;
   } | null;
+  lifetimeTotal: number;
   error?: string;
 };
 
@@ -32,12 +33,14 @@ type WeeklySubmitProps = {
   progress: Progress;
   weekId: string;
   locked: boolean;
+  previewOnly: boolean;
 };
 
 export default function WeeklySubmit({
   progress,
   weekId,
   locked,
+  previewOnly,
 }: WeeklySubmitProps) {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,10 +153,11 @@ export default function WeeklySubmit({
         {`Week of ${weekLabel || "…"}. Press the button below to submit your scores to the frog leaderboard.`}
       </p>
 
-      <div className="grid grid-cols-3 gap-2 text-center mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center mb-4">
         <ScoreStat label="Guild" value={board1Score} />
         <ScoreStat label="Progression" value={board2Score} />
         <ScoreStat label="Total" value={totalScore} />
+        <ScoreStat label="Lifetime" value={me?.lifetimeTotal ?? 0} />
       </div>
 
       {saved && (
@@ -165,7 +169,9 @@ export default function WeeklySubmit({
 
       {locked ? (
         <p className="text-sm text-amber-200">
-          This week is closed. Past weeks are read-only.
+          {previewOnly
+            ? "Preview only until this week starts."
+            : "This week is closed. Past weeks are read-only."}
         </p>
       ) : loading || me?.weekId !== weekId ? (
         <p className="text-sm text-gray-400">Checking Discord membership…</p>

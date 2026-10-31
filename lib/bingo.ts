@@ -19,6 +19,7 @@ export const STORAGE_KEY = "bingo-progress";
 export const FIRST_WEEK_ID = "2026-10-21";
 
 const WEEK_LENGTH_MS = 7 * 24 * 60 * 60 * 1000;
+const WEEK_PREVIEW_WINDOW_MS = 5 * 24 * 60 * 60 * 1000;
 const WEEK_START_ANCHOR_MS = Date.parse("2026-10-21T23:00:00.000Z");
 
 export const initialProgress: Progress = {
@@ -105,7 +106,21 @@ export function getWeekId(now = new Date()): string {
 }
 
 export function isWeekStarted(weekId: string, now = new Date()): boolean {
-  return now.getTime() >= Date.parse(`${weekId}T23:00:00.000Z`);
+  return now.getTime() >= getWeekStartTime(weekId);
+}
+
+export function isWeekReadable(weekId: string, now = new Date()): boolean {
+  const currentWeekId = getWeekId(now);
+  if (weekId <= currentWeekId) return true;
+
+  return (
+    weekId === addWeeks(currentWeekId, 1) &&
+    now.getTime() >= getWeekStartTime(weekId) - WEEK_PREVIEW_WINDOW_MS
+  );
+}
+
+function getWeekStartTime(weekId: string): number {
+  return Date.parse(`${weekId}T23:00:00.000Z`);
 }
 
 export function addWeeks(weekId: string, amount: number): string {
