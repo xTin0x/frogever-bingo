@@ -4,13 +4,19 @@ import { useEffect, useState, useRef } from "react";
 import { toBlob } from "html-to-image";
 import WeeklySubmit from "@/components/WeeklySubmit";
 import {
+  addWeeks,
   boards,
   boardScore,
   completedLineCount,
+  formatWeekLabel,
+  getWeekId,
   initialProgress,
+  isBoardTasks,
   isProgress,
+  isWeekStarted,
   STORAGE_KEY,
   type BoardId,
+  type BoardTasks,
   type Progress,
 } from "@/lib/bingo";
 
@@ -19,31 +25,130 @@ export default function BingoBoard() {
   const [copying, setCopying] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
   const [selectedBoard, setSelectedBoard] = useState<BoardId | null>(null);
+  const [currentWeekId, setCurrentWeekId] = useState<string | null>(null);
+  const [selectedWeekId, setSelectedWeekId] = useState<string | null>(null);
   const [progress, setProgress] = useState<Progress>(initialProgress);
+  const [loadedWeekId, setLoadedWeekId] = useState<string | null>(null);
+  const [weeklyTasks, setWeeklyTasks] = useState<BoardTasks | null>(null);
+  const [loadedTasksWeekId, setLoadedTasksWeekId] = useState<string | null>(null);
+  const [boardError, setBoardError] = useState("");
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    function updateCurrentWeek() {
+      const weekId = getWeekId();
+      setCurrentWeekId(weekId);
+      setSelectedWeekId((selectedWeekId) => selectedWeekId ?? weekId);
+    }
+
+    queueMicrotask(updateCurrentWeek);
+    const interval = window.setInterval(updateCurrentWeek, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedWeekId) return;
+
+    const saved =
+      localStorage.getItem(`${STORAGE_KEY}:${selectedWeekId}`) ??
+      (selectedWeekId === getWeekId()
+        ? localStorage.getItem(STORAGE_KEY)
+        : null);
+    let nextProgress = initialProgress;
 
     if (saved) {
       try {
         const parsed: unknown = JSON.parse(saved);
         if (isProgress(parsed)) {
           // Restore client-only saved checks after hydration.
-          // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is unavailable during SSR
-          setProgress(parsed);
+          nextProgress = parsed;
         }
       } catch {
         console.error("Error loading past progress");
       }
     }
-  }, []);
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is unavailable during SSR
+    setProgress(nextProgress);
+    queueMicrotask(() => setLoadedWeekId(selectedWeekId));
+  }, [selectedWeekId]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
+    if (!selectedWeekId) return;
+
+    let cancelled = false;
+
+    fetch(`/api/boards?weekId=${encodeURIComponent(selectedWeekId)}`, {
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        const data = (await response.json()) as {
+          board1Tasks?: unknown;
+          board2Tasks?: unknown;
+          error?: string;
+        };
+        if (!response.ok) {
+          throw new Error(data.error ?? "Could not load weekly tasks.");
+        }
+
+        const tasks = {
+          board1: data.board1Tasks,
+          board2: data.board2Tasks,
+        };
+        if (!isBoardTasks(tasks)) {
+          throw new Error("Weekly tasks were invalid.");
+        }
+        return tasks;
+      })
+      .then((tasks) => {
+        if (cancelled) return;
+        setWeeklyTasks(tasks);
+        setBoardError("");
+        setLoadedTasksWeekId(selectedWeekId);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setWeeklyTasks(null);
+        setBoardError(
+          error instanceof Error ? error.message : "Could not load weekly tasks."
+        );
+        setLoadedTasksWeekId(selectedWeekId);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedWeekId]);
+
+  useEffect(() => {
+    if (loadedWeekId !== selectedWeekId) return;
+    localStorage.setItem(
+      `${STORAGE_KEY}:${selectedWeekId}`,
+      JSON.stringify(progress)
+    );
+  }, [loadedWeekId, progress, selectedWeekId]);
+
+  const locked =
+    selectedWeekId !== null &&
+    (!isWeekStarted(selectedWeekId) ||
+      (currentWeekId !== null && selectedWeekId < currentWeekId));
+  const boardReady =
+    selectedWeekId !== null &&
+    loadedTasksWeekId === selectedWeekId &&
+    weeklyTasks !== null;
+
+  function changeWeek(amount: number) {
+    if (!currentWeekId || !selectedWeekId) return;
+
+    setSelectedBoard(null);
+    setSelectedWeekId((weekId) => {
+      if (!weekId) return weekId;
+      const nextWeekId = addWeeks(weekId, amount);
+      return nextWeekId > currentWeekId ? weekId : nextWeekId;
+    });
+  }
 
   function toggleSquare(index: number) {
-    if (!selectedBoard) return;
+    if (locked || !selectedBoard) return;
 
     setProgress((prev) => ({
       ...prev,
@@ -54,7 +159,7 @@ export default function BingoBoard() {
   }
 
   function resetBoard() {
-    if (!selectedBoard) return;
+    if (locked || !selectedBoard) return;
 
     setProgress((prev) => ({
       ...prev,
@@ -104,9 +209,22 @@ export default function BingoBoard() {
     }
   }
 
+  if (!currentWeekId || !selectedWeekId) {
+    return (
+      <main className="min-h-screen bg-[#10251B] flex items-center justify-center p-6 text-gray-50">
+        Loading weekly board...
+      </main>
+    );
+  }
+
   if (!selectedBoard) {
     return (
       <main className="min-h-screen bg-[#10251B] flex flex-col items-center justify-center p-6">
+        <WeekSelector
+          currentWeekId={currentWeekId}
+          selectedWeekId={selectedWeekId}
+          onChange={changeWeek}
+        />
         <h1 className="text-3xl font-bold mb-3">🐸 frog Weekly Bingo</h1>
 
         <p className="text-gray-50 mb-8 justify-center">
@@ -116,50 +234,60 @@ export default function BingoBoard() {
         </p>
         <p className="text-gray-50 mb-8 justify-center">Select a board:</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
-          {(Object.keys(boards) as BoardId[]).map((id) => {
-            const completed = progress[id].filter(Boolean).length;
+        {boardReady ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
+            {(Object.keys(boards) as BoardId[]).map((id) => {
+              const completed = progress[id].filter(Boolean).length;
 
-            return (
-              <button
-                key={id}
-                onClick={() => setSelectedBoard(id)}
-                className={`p-6 border-2 rounded-xl text-left transition-all ${
-                  completed === 9
-                    ? "bg-indigo-500 border-[#ffd700] hover:border-indigo-200"
-                    : "bg-green-100 border-green-800 hover:border-indigo-500 hover:bg-green-200"
-                }`}
-              >
-                <h2
-                  className={`text-xl font-bold mb-2 ${
-                    completed === 9 ? "text-indigo-800" : "text-gray-600"
+              return (
+                <button
+                  key={id}
+                  onClick={() => setSelectedBoard(id)}
+                  className={`p-6 border-2 rounded-xl text-left transition-all ${
+                    completed === 9
+                      ? "bg-indigo-500 border-[#ffd700] hover:border-indigo-200"
+                      : "bg-green-100 border-green-800 hover:border-indigo-500 hover:bg-green-200"
                   }`}
                 >
-                  {boards[id].title}
-                </h2>
+                  <h2
+                    className={`text-xl font-bold mb-2 ${
+                      completed === 9 ? "text-indigo-800" : "text-gray-600"
+                    }`}
+                  >
+                    {boards[id].title}
+                  </h2>
 
-                <p className="text-sm text-gray-400 mb-4">
-                  {boards[id].description}
-                </p>
+                  <p className="text-sm text-gray-400 mb-4">
+                    {boards[id].description}
+                  </p>
 
-                <p
-                  className={`text-sm font-medium ${
-                    completed === 9 ? "text-[#ffd700]" : "text-indigo-600"
-                  }`}
-                >
-                  {completed}/9 squares completed · {boardScore(progress[id])} pts
-                </p>
-              </button>
-            );
-          })}
-        </div>
+                  <p
+                    className={`text-sm font-medium ${
+                      completed === 9 ? "text-[#ffd700]" : "text-indigo-600"
+                    }`}
+                  >
+                    {completed}/9 squares completed · {boardScore(progress[id])} pts
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-amber-200 text-center">
+            {boardError || "Loading this week's tasks..."}
+          </p>
+        )}
 
-        <WeeklySubmit progress={progress} />
+        <WeeklySubmit
+          progress={progress}
+          weekId={selectedWeekId}
+          locked={locked}
+        />
       </main>
     );
   }
 
-  const tasks = boards[selectedBoard].tasks;
+  const tasks = weeklyTasks?.[selectedBoard] ?? [];
   const selected = progress[selectedBoard];
   const completedLines = completedLineCount(selected);
   const boardCompleted = selected.every(Boolean);
@@ -167,6 +295,11 @@ export default function BingoBoard() {
 
   return (
     <main className="min-h-screen bg-[#10251B] flex flex-col items-center justify-center p-4 sm:p-6">
+      <WeekSelector
+        currentWeekId={currentWeekId}
+        selectedWeekId={selectedWeekId}
+        onChange={changeWeek}
+      />
       <button
         onClick={backToSelection}
         className="mb-6 text-sm text-gray-50 hover:text-indigo-600"
@@ -178,7 +311,7 @@ export default function BingoBoard() {
         ref={boardRef}
         className="w-full max-w-[640px] bg-[#10251B] p-4 sm:p-6 rounded-x1"
       >
-        <h1 className="text-2xl sm:text-3x1 font-bold mb-6 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
           {boards[selectedBoard].title}
         </h1>
 
@@ -196,6 +329,7 @@ export default function BingoBoard() {
             <button
               key={index}
               onClick={() => toggleSquare(index)}
+              disabled={locked}
               aria-pressed={selected[index]}
               className={`
             w-full aspect-square min-w-0
@@ -229,6 +363,12 @@ export default function BingoBoard() {
           ))}
         </div>
 
+        {locked && (
+          <p className="mt-5 text-sm font-semibold text-amber-200 text-center">
+            This week is closed. Past weeks are read-only.
+          </p>
+        )}
+
         {boardCompleted && (
           <p className="mt-5 text-base sm:text-lg font-bold text-[#ffd700] text-center">
             🐸 Bingo! Board completed! 🐸
@@ -239,6 +379,7 @@ export default function BingoBoard() {
       <div className="w-full max-w-[640px] flex flex-col gap-3 mt-6">
         <button
           onClick={resetBoard}
+          disabled={locked}
           className="w-full px-6 py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 transition-colors"
         >
           Reset Board
@@ -257,5 +398,46 @@ export default function BingoBoard() {
         )}
       </div>
     </main>
+  );
+}
+
+function WeekSelector({
+  currentWeekId,
+  selectedWeekId,
+  onChange,
+}: {
+  currentWeekId: string;
+  selectedWeekId: string;
+  onChange: (amount: number) => void;
+}) {
+  return (
+    <div className="w-full max-w-lg mb-6 rounded-xl border border-green-800 bg-green-950/40 p-3 text-gray-50">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          aria-label="Previous week"
+          onClick={() => onChange(-1)}
+          className="h-10 w-10 rounded-lg bg-gray-900 text-xl hover:bg-gray-700"
+        >
+          ←
+        </button>
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-wide text-gray-400">Week</p>
+          <p className="font-bold">{formatWeekLabel(selectedWeekId)}</p>
+          {selectedWeekId < currentWeekId && (
+            <p className="text-xs text-amber-200">Locked</p>
+          )}
+        </div>
+        <button
+          type="button"
+          aria-label="Next week"
+          disabled={selectedWeekId >= currentWeekId}
+          onClick={() => onChange(1)}
+          className="h-10 w-10 rounded-lg bg-gray-900 text-xl hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          →
+        </button>
+      </div>
+    </div>
   );
 }

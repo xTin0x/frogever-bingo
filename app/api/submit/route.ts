@@ -1,7 +1,13 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { boardScore, getWeekId, isProgress } from "@/lib/bingo";
-import { upsertWeeklyScore } from "@/lib/db";
+import {
+  boardScore,
+  getWeekId,
+  isProgress,
+  isWeekId,
+  isWeekStarted,
+} from "@/lib/bingo";
+import { getWeeklyBoard, upsertWeeklyScore } from "@/lib/db";
 import { postSubmissionWebhook } from "@/lib/discord";
 import { decodeSession, SESSION_COOKIE } from "@/lib/session";
 
@@ -23,6 +29,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
+  const requestedWeekId =
+    body !== null && typeof body === "object" && "weekId" in body
+      ? (body as { weekId: unknown }).weekId
+      : null;
+
+  if (!isWeekId(requestedWeekId)) {
+    return NextResponse.json({ error: "Invalid week." }, { status: 400 });
+  }
+
+  const currentWeekId = getWeekId();
+  if (requestedWeekId !== currentWeekId) {
+    return NextResponse.json(
+      { error: "Only the current week can be submitted." },
+      { status: 409 }
+    );
+  }
+
+  if (!isWeekStarted(requestedWeekId)) {
+    return NextResponse.json(
+      { error: "The first week is currently preview-only." },
+      { status: 409 }
+    );
+  }
+
   const progress =
     body !== null && typeof body === "object" && "progress" in body
       ? (body as { progress: unknown }).progress
@@ -35,12 +65,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const weekId = getWeekId();
+  const weekId = requestedWeekId;
   const board1Score = boardScore(progress.board1);
   const board2Score = boardScore(progress.board2);
   const totalScore = board1Score + board2Score;
 
   try {
+    const board = await getWeeklyBoard(weekId);
+    if (!board) {
+      return NextResponse.json(
+        { error: "This week's board is not configured yet." },
+        { status: 409 }
+      );
+    }
+
     const { score, updated } = await upsertWeeklyScore({
       discordUserId: session.discordUserId,
       username: session.username,

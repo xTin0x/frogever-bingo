@@ -25,14 +25,20 @@ const AUTH_ERRORS: Record<string, string> = {
   invalid: "Discord login expired. Try connecting again.",
   failed: "Discord login failed. Try again in a moment.",
   config:
-    "Discord and Neon are not configured yet.",
+    "ScoresDB configuration error.",
 };
 
 type WeeklySubmitProps = {
   progress: Progress;
+  weekId: string;
+  locked: boolean;
 };
 
-export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
+export default function WeeklySubmit({
+  progress,
+  weekId,
+  locked,
+}: WeeklySubmitProps) {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -46,11 +52,14 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
   const board1Score = boardScore(progress.board1);
   const board2Score = boardScore(progress.board2);
   const totalScore = board1Score + board2Score;
-  const weekLabel = me?.weekId ? formatWeekLabel(me.weekId) : "";
+  const weekLabel = formatWeekLabel(weekId);
 
   async function loadMe() {
     try {
-      const response = await fetch("/api/me", { cache: "no-store" });
+      const response = await fetch(
+        `/api/me?weekId=${encodeURIComponent(weekId)}`,
+        { cache: "no-store" }
+      );
       const data = (await response.json()) as MeResponse;
       setMe(data);
     } catch {
@@ -67,7 +76,9 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
     }
 
     let cancelled = false;
-    fetch("/api/me", { cache: "no-store" })
+    fetch(`/api/me?weekId=${encodeURIComponent(weekId)}`, {
+      cache: "no-store",
+    })
       .then((response) => response.json())
       .then((data: MeResponse) => {
         if (!cancelled) setMe(data);
@@ -85,7 +96,7 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [weekId]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -100,7 +111,7 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
       const response = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ progress }),
+        body: JSON.stringify({ weekId, progress }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -118,8 +129,8 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
         : "but Discord could not be notified";
       setMessage(
         data.updated
-          ? `Updated this week's scores ${posted}.`
-          : `Submitted this week's scores ${posted}.`
+          ? `Updated scores for ${weekLabel} ${posted}.`
+          : `Submitted scores for ${weekLabel} ${posted}.`
       );
       await loadMe();
     } catch {
@@ -152,7 +163,11 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
         </p>
       )}
 
-      {loading ? (
+      {locked ? (
+        <p className="text-sm text-amber-200">
+          This week is closed. Past weeks are read-only.
+        </p>
+      ) : loading || me?.weekId !== weekId ? (
         <p className="text-sm text-gray-400">Checking Discord membership…</p>
       ) : user ? (
         <div className="flex flex-col gap-3">
@@ -162,7 +177,7 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
           </p>
           <button
             onClick={() => void submitScores()}
-            disabled={submitting}
+            disabled={submitting || locked}
             className="w-full px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50"
           >
             {submitting
@@ -183,7 +198,7 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
           href="/api/auth/discord"
           className="block w-full px-6 py-3 rounded-xl bg-[#5865F2] text-white font-semibold text-center hover:bg-[#4752c4] transition-colors"
         >
-          Connect Discord to submit
+          Connect Discord to load saved scores
         </a>
       )}
 

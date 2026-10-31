@@ -14,6 +14,23 @@ pnpm dev
 bun dev
 ```
 
+## Weekly board administration
+
+Set `BINGO_ADMIN_USER_ID` to the Discord user ID allowed to publish weekly board tasks. After authenticating as that user, send a `POST` request to `/api/admin/boards` with a current or future week ID and nine tasks for each board:
+
+```json
+{
+	"weekId": "2026-10-28",
+	"tasks": {
+		"board1": ["Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6", "Task 7", "Task 8", "Task 9"],
+		"board2": ["Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6", "Task 7", "Task 8", "Task 9"]
+	}
+}
+```
+
+Future board definitions are stored in the database but are not returned by the public board API until their week begins.
+
+The dev branch currently starts weekly periods at October 21, 2026 at 23:00 GMT and seeds the default boards for October 21 and October 28. The first week is available as a read-only preview before its start time.
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.

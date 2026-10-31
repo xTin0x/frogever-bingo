@@ -2,41 +2,24 @@ export const boards = {
   board1: {
     title: "Guild Contribution",
     description: "Help other frogs and contribute to the guild bank",
-    tasks: [
-      "Trade with a guildie or deposit in guild bank 1 item crafted/acquired through one of your primary professions",
-      "Make a 50s contribution to the guild bank fund",
-      "Trade with a guildie or deposit in guild bank 1 item crafted/acquired through one of your secondary professions",
-      "Trade with a guildie or deposit in guild bank 1 item crafted/acquired through one of your secondary professions",
-      "Trade with a guildie or deposit in guild bank 1 item crafted/acquired through one of your primary professions",
-      "Make a 50s contribution to the guild bank fund",
-      "Trade with a guildie or deposit in guild bank 1 item crafted/acquired through one of your primary professions",
-      "Make a 50s contribution to the guild bank fund",
-      "Trade with a guildie or deposit in guild bank 1 item crafted/acquired through one of your primary professions",
-    ],
   },
 
   board2: {
     title: "Personal Progression",
     description: "Milestones for your personal progression",
-    tasks: [
-      "Equip a Blue Item",
-      "Reach Level 50 in 1 primary profession",
-      "Reach Level 50 in 2 primary professions",
-      "Reach Level 10",
-      "Reach Level 15",
-      "Reach Level 20",
-      "Complete 30 quests",
-      "Clear any dungeon",
-      "Reach Level 50 in any secondary profession (First Aid/Cooking/Fishing)",
-    ],
   },
 } as const;
 
 export type BoardId = keyof typeof boards;
+export type BoardTasks = Record<BoardId, string[]>;
 
 export type Progress = Record<BoardId, boolean[]>;
 
 export const STORAGE_KEY = "bingo-progress";
+export const FIRST_WEEK_ID = "2026-10-21";
+
+const WEEK_LENGTH_MS = 7 * 24 * 60 * 60 * 1000;
+const WEEK_START_ANCHOR_MS = Date.parse("2026-10-21T23:00:00.000Z");
 
 export const initialProgress: Progress = {
   board1: Array(9).fill(false),
@@ -81,17 +64,54 @@ export function isProgress(value: unknown): value is Progress {
   );
 }
 
+export function isBoardTasks(value: unknown): value is BoardTasks {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    Object.values(value as Record<string, unknown>).length === 2 &&
+    (Object.keys(boards) as BoardId[]).every((boardId) => {
+      const tasks = (value as Record<BoardId, unknown>)[boardId];
+      return (
+        Array.isArray(tasks) &&
+        tasks.length === 9 &&
+        tasks.every((task) => typeof task === "string" && task.trim().length > 0)
+      );
+    })
+  );
+}
+
+export function isWeekId(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T23:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && getWeekId(date) === value;
+}
+
 /**
- * Guild week starts Tuesday 00:00 UTC (classic WoW reset day).
+ * Dev weeks start every seven days from Oct 21, 2026 at 23:00 GMT.
  */
 export function getWeekId(now = new Date()): string {
-  const utc = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  const periodsSinceAnchor = Math.max(
+    0,
+    Math.floor((now.getTime() - WEEK_START_ANCHOR_MS) / WEEK_LENGTH_MS)
   );
-  const day = utc.getUTCDay();
-  const daysSinceTuesday = (day + 5) % 7;
-  utc.setUTCDate(utc.getUTCDate() - daysSinceTuesday);
-  return utc.toISOString().slice(0, 10);
+  return new Date(
+    WEEK_START_ANCHOR_MS + periodsSinceAnchor * WEEK_LENGTH_MS
+  )
+    .toISOString()
+    .slice(0, 10);
+}
+
+export function isWeekStarted(weekId: string, now = new Date()): boolean {
+  return now.getTime() >= Date.parse(`${weekId}T23:00:00.000Z`);
+}
+
+export function addWeeks(weekId: string, amount: number): string {
+  const date = new Date(`${weekId}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + amount * 7);
+  return date.toISOString().slice(0, 10);
 }
 
 export function formatWeekLabel(weekId: string): string {

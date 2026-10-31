@@ -1,6 +1,12 @@
 import { neon } from "@neondatabase/serverless";
 import { getDatabaseUrl } from "@/lib/env";
-import type { Progress } from "@/lib/bingo";
+import {
+  addWeeks,
+  FIRST_WEEK_ID,
+  type BoardTasks,
+  type Progress,
+} from "@/lib/bingo";
+import { defaultBoardTasks } from "@/lib/default-boards";
 
 export type WeeklyScore = {
   discord_user_id: string;
@@ -12,6 +18,14 @@ export type WeeklyScore = {
   total_score: number;
   board1_progress: boolean[];
   board2_progress: boolean[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type WeeklyBoard = {
+  week_id: string;
+  board1_tasks: string[];
+  board2_tasks: string[];
   created_at: string;
   updated_at: string;
 };
@@ -42,7 +56,60 @@ export async function ensureSchema() {
       UNIQUE (discord_user_id, week_id)
     )
   `;
+  await db`
+    CREATE TABLE IF NOT EXISTS weekly_boards (
+      week_id TEXT PRIMARY KEY,
+      board1_tasks JSONB NOT NULL,
+      board2_tasks JSONB NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  for (const weekId of [FIRST_WEEK_ID, addWeeks(FIRST_WEEK_ID, 1)]) {
+    await db`
+      INSERT INTO weekly_boards (week_id, board1_tasks, board2_tasks)
+      VALUES (
+        ${weekId},
+        ${JSON.stringify(defaultBoardTasks.board1)}::jsonb,
+        ${JSON.stringify(defaultBoardTasks.board2)}::jsonb
+      )
+      ON CONFLICT (week_id) DO NOTHING
+    `;
+  }
   schemaReady = true;
+}
+
+export async function getWeeklyBoard(weekId: string): Promise<WeeklyBoard | null> {
+  await ensureSchema();
+  const rows = await sql()`
+    SELECT week_id, board1_tasks, board2_tasks, created_at, updated_at
+    FROM weekly_boards
+    WHERE week_id = ${weekId}
+    LIMIT 1
+  `;
+  return (rows[0] as WeeklyBoard | undefined) ?? null;
+}
+
+export async function saveWeeklyBoard(input: {
+  weekId: string;
+  tasks: BoardTasks;
+}): Promise<WeeklyBoard> {
+  await ensureSchema();
+  const rows = await sql()`
+    INSERT INTO weekly_boards (week_id, board1_tasks, board2_tasks)
+    VALUES (
+      ${input.weekId},
+      ${JSON.stringify(input.tasks.board1)}::jsonb,
+      ${JSON.stringify(input.tasks.board2)}::jsonb
+    )
+    ON CONFLICT (week_id)
+    DO UPDATE SET
+      board1_tasks = EXCLUDED.board1_tasks,
+      board2_tasks = EXCLUDED.board2_tasks,
+      updated_at = NOW()
+    RETURNING week_id, board1_tasks, board2_tasks, created_at, updated_at
+  `;
+  return rows[0] as WeeklyBoard;
 }
 
 export async function getWeeklyScore(

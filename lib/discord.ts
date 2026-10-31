@@ -103,8 +103,8 @@ export async function postSubmissionWebhook(input: {
       embeds: [
         {
           title: input.updated
-            ? "Weekly bingo scores updated"
-            : "Weekly bingo scores submitted",
+            ? "Scores Updated"
+            : "Scores Submitted",
           description: `**${input.displayName}** (\`${input.username}\`) reported scores for the week of ${formatWeekLabel(input.weekId)}.`,
           color: 0x5865f2,
           fields: [

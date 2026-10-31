@@ -1,15 +1,24 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getWeekId } from "@/lib/bingo";
+import { getWeekId, isWeekId } from "@/lib/bingo";
 import { getWeeklyScore } from "@/lib/db";
 import { decodeSession, SESSION_COOKIE } from "@/lib/session";
 
-export async function GET() {
+export async function GET(request: Request) {
   const store = await cookies();
   const session = decodeSession(store.get(SESSION_COOKIE)?.value);
-  const weekId = getWeekId();
+  const currentWeekId = getWeekId();
+  const requestedWeekId = new URL(request.url).searchParams.get("weekId");
+  const weekId = requestedWeekId ?? currentWeekId;
 
   const headers = { "Cache-Control": "no-store" };
+
+  if (!isWeekId(weekId)) {
+    return NextResponse.json(
+      { error: "Invalid week." },
+      { status: 400, headers }
+    );
+  }
 
   if (!session) {
     return NextResponse.json(

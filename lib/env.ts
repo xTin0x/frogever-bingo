@@ -42,6 +42,10 @@ export function getSessionSecret(): string {
   return secret;
 }
 
+export function getBingoAdminUserId(): string {
+  return required("BINGO_ADMIN_USER_ID");
+}
+
 export function getRedirectUri(request: Request): string {
   const fromEnv = process.env.DISCORD_REDIRECT_URI?.trim();
   if (fromEnv) return fromEnv;
