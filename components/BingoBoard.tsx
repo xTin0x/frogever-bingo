@@ -1,11 +1,8 @@
-
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { toBlob } from "html-to-image";
 
-// Define the two Bingo boards
 const boards = {
   board1: {
     title: "Guild Contribution",
@@ -46,6 +43,11 @@ type Progress = Record<BoardId, boolean[]>;
 
 const STORAGE_KEY = "bingo-progress";
 
+const initialProgress: Progress = {
+  board1: Array(9).fill(false),
+  board2: Array(9).fill(false),
+};
+
 const points: number[][] = [
   [0, 1, 2],
   [3, 4, 5],
@@ -57,25 +59,22 @@ const points: number[][] = [
   [2, 4, 6],
 ];
 
-const initialProgress: Progress = {
-  board1: Array(9).fill(false),
-  board2: Array(9).fill(false),
-};
+//main app
 
 export default function BingoBoard() {
   const boardRef = useRef<HTMLDivElement>(null);
   const [copying, setCopying] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
 
-  // Currently selected board
+  // current board
   const [selectedBoard, setSelectedBoard] =
     useState<BoardId | null>(null);
 
-  // Progress for both boards
-  const [progress, setProgress] =
+  // progress
+  const [progress, setProgress] = 
     useState<Progress>(initialProgress);
 
-  // Load saved progress
+  // load saved progress
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -83,6 +82,7 @@ export default function BingoBoard() {
       try {
         const parsed: unknown = JSON.parse(saved);
 
+        // load checks
         if (
           parsed !== null &&
           typeof parsed === "object" &&
@@ -96,7 +96,7 @@ export default function BingoBoard() {
             (value) => typeof value === "boolean"
           )
         ) {
-          setProgress(parsed as Progress);
+          setProgress(parsed as Progress); //set progress
         }
       } catch {
         console.error("Error loading past progress");
@@ -104,7 +104,7 @@ export default function BingoBoard() {
     }
   }, []);
 
-  // Save progress whenever it changes
+  // on change save progress
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -112,7 +112,7 @@ export default function BingoBoard() {
     );
   }, [progress]);
 
-  // Toggle a square on the active board
+  // toggle squares
   function toggleSquare(index: number) {
     if (!selectedBoard) return;
 
@@ -124,7 +124,7 @@ export default function BingoBoard() {
     }));
   }
 
-  // Reset only the active board
+  // reset current board
   function resetBoard() {
     if (!selectedBoard) return;
 
@@ -134,7 +134,7 @@ export default function BingoBoard() {
     }));
   }
 
-  // Return to board selection
+  // return to board selection
   function backToSelection() {
     setSelectedBoard(null);
   }
@@ -195,7 +195,7 @@ export default function BingoBoard() {
       <main className="min-h-screen bg-[#10251B] flex flex-col items-center justify-center p-6">
 
         <h1 className="text-3xl font-bold mb-3">
-          🐸 frog Weekly Bingo 🐸
+          🐸 frog Weekly Bingo
         </h1>
 
         <p className="text-gray-50 mb-8 justify-center">
@@ -207,7 +207,8 @@ export default function BingoBoard() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
 
-          {(Object.keys(boards) as BoardId[]).map((id) => {
+          {(Object.keys(boards) as BoardId[]).map((id) => { //list boards - create button
+            //number of completed tasks in board
             const completed = progress[id].filter(Boolean).length;
 
             return (
@@ -245,7 +246,7 @@ export default function BingoBoard() {
     );
   }
 
-  // Active board data
+  //current board data
   const tasks = boards[selectedBoard].tasks;
   const selected = progress[selectedBoard];
 
@@ -268,7 +269,7 @@ export default function BingoBoard() {
         onClick={backToSelection}
         className="mb-6 text-sm text-gray-50 hover:text-indigo-600"
       >
-        ← Back to boards
+        ← Back to boards 🐸
       </button>
 
       {/*Screenshot Area */}
@@ -342,7 +343,7 @@ export default function BingoBoard() {
       {/* Completion message */}
       {boardCompleted && (
         <p className="mt-5 text-base sm:text-lg font-bold text-indigo-600 text-center">
-          🎉 Bingo! Board completed!
+          🐸 Bingo! Board completed! 🐸
         </p>
       )}
       </div>
