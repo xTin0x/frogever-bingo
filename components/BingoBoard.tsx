@@ -342,7 +342,7 @@ export default function BingoBoard() {
 
       {/* Completion message */}
       {boardCompleted && (
-        <p className="mt-5 text-base sm:text-lg font-bold text-indigo-600 text-center">
+        <p className="mt-5 text-base sm:text-lg font-bold text-[#ffd700] text-center">
           🐸 Bingo! Board completed! 🐸
         </p>
       )}
