@@ -2,8 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   exchangeDiscordCode,
+  fetchDiscordGuildMember,
   fetchDiscordUser,
-  isGuildMember,
 } from "@/lib/discord";
 import {
   encodeSession,
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 
   try {
     const accessToken = await exchangeDiscordCode(request, code);
-    const member = await isGuildMember(accessToken);
+    const member = await fetchDiscordGuildMember(accessToken);
     if (!member) {
       return redirectHome(request, "not_member");
     }
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     const session = encodeSession({
       discordUserId: user.id,
       username: user.username,
-      displayName: user.global_name || user.username,
+      displayName: member.nick ?? user.global_name ?? user.username,
       avatar: user.avatar,
       exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
     });

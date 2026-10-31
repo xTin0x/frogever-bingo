@@ -11,6 +11,10 @@ export type DiscordUser = {
   avatar: string | null;
 };
 
+export type DiscordGuildMember = {
+  nick: string | null;
+};
+
 export function discordAuthorizeUrl(request: Request, state: string): string {
   const { clientId } = getDiscordConfig();
   const params = new URLSearchParams({
@@ -62,7 +66,9 @@ export async function fetchDiscordUser(accessToken: string): Promise<DiscordUser
   return (await response.json()) as DiscordUser;
 }
 
-export async function isGuildMember(accessToken: string): Promise<boolean> {
+export async function fetchDiscordGuildMember(
+  accessToken: string
+): Promise<DiscordGuildMember | null> {
   const { guildId } = getDiscordConfig();
   const response = await fetch(
     `${DISCORD_API}/users/@me/guilds/${guildId}/member`,
@@ -72,11 +78,11 @@ export async function isGuildMember(accessToken: string): Promise<boolean> {
     }
   );
 
-  if (response.status === 404) return false;
+  if (response.status === 404) return null;
   if (!response.ok) {
-    throw new Error("Failed to verify Discord server membership");
+    throw new Error("Failed to fetch Discord server membership");
   }
-  return true;
+  return (await response.json()) as DiscordGuildMember;
 }
 
 export async function postSubmissionWebhook(input: {
