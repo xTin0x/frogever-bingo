@@ -25,7 +25,7 @@ const AUTH_ERRORS: Record<string, string> = {
   invalid: "Discord login expired. Try connecting again.",
   failed: "Discord login failed. Try again in a moment.",
   config:
-    "Discord and Neon are not configured yet. Add the env vars from .env.example.",
+    "Discord and Neon are not configured yet.",
 };
 
 type WeeklySubmitProps = {
@@ -136,7 +136,7 @@ export default function WeeklySubmit({ progress }: WeeklySubmitProps) {
     <section className="w-full max-w-lg mt-10 rounded-xl border border-green-800 bg-green-950/40 p-5 text-gray-50">
       <h2 className="text-lg font-bold mb-1">Weekly leaderboard submit</h2>
       <p className="text-sm text-gray-300 mb-4">
-        {`Week of ${weekLabel || "…"}. Guild members can save both board scores to Neon and share them in Discord.`}
+        {`Week of ${weekLabel || "…"}. Press the button below to submit your scores to the frog leaderboard.`}
       </p>
 
       <div className="grid grid-cols-3 gap-2 text-center mb-4">
