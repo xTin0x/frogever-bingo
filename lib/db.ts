@@ -30,6 +30,22 @@ export type WeeklyBoard = {
   updated_at: string;
 };
 
+export type LeaderboardEntry = {
+  displayName: string;
+  username: string;
+  lifetimeTotal: number;
+  board1TasksCompleted: number;
+  board2TasksCompleted: number;
+  firstSubmittedAt: string;
+  weeks: Array<{
+    weekId: string;
+    board1Score: number;
+    board2Score: number;
+    totalScore: number;
+    submittedAt: string;
+  }>;
+};
+
 let schemaReady = false;
 
 function sql() {
@@ -145,6 +161,82 @@ export async function getLifetimeTotal(discordUserId: string): Promise<number> {
     WHERE discord_user_id = ${discordUserId}
   `;
   return Number(rows[0]?.lifetime_total ?? 0);
+}
+
+export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
+  await ensureSchema();
+  const rows = await sql()`
+    SELECT
+      discord_user_id,
+      discord_username,
+      discord_display_name,
+      week_id,
+      board1_score,
+      board2_score,
+      total_score,
+      board1_progress,
+      board2_progress,
+      created_at
+    FROM weekly_scores
+    ORDER BY created_at ASC
+  `;
+
+  const entries = new Map<string, LeaderboardEntry>();
+  for (const row of rows as Array<{
+    discord_user_id: string;
+    discord_username: string;
+    discord_display_name: string;
+    week_id: string;
+    board1_score: number;
+    board2_score: number;
+    total_score: number;
+    board1_progress: unknown;
+    board2_progress: unknown;
+    created_at: string;
+  }>) {
+    const submittedAt = String(row.created_at);
+    const existing = entries.get(row.discord_user_id);
+    const entry = existing ?? {
+      displayName: row.discord_display_name,
+      username: row.discord_username,
+      lifetimeTotal: 0,
+      board1TasksCompleted: 0,
+      board2TasksCompleted: 0,
+      firstSubmittedAt: submittedAt,
+      weeks: [],
+    };
+
+    entry.displayName = row.discord_display_name;
+    entry.username = row.discord_username;
+    entry.lifetimeTotal += Number(row.total_score);
+    entry.board1TasksCompleted += countCompletedTasks(row.board1_progress);
+    entry.board2TasksCompleted += countCompletedTasks(row.board2_progress);
+    entry.weeks.push({
+      weekId: row.week_id,
+      board1Score: Number(row.board1_score),
+      board2Score: Number(row.board2_score),
+      totalScore: Number(row.total_score),
+      submittedAt,
+    });
+    entries.set(row.discord_user_id, entry);
+  }
+
+  return [...entries.values()]
+    .sort(
+      (left, right) =>
+        right.lifetimeTotal - left.lifetimeTotal ||
+        left.firstSubmittedAt.localeCompare(right.firstSubmittedAt)
+    )
+    .map((entry) => ({
+      ...entry,
+      weeks: entry.weeks.sort((left, right) =>
+        left.weekId.localeCompare(right.weekId)
+      ),
+    }));
+}
+
+function countCompletedTasks(progress: unknown): number {
+  return Array.isArray(progress) ? progress.filter(Boolean).length : 0;
 }
 
 export async function upsertWeeklyScore(input: {

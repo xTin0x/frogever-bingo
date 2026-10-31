@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Leaderboard from "@/components/Leaderboard";
 import { boardScore, formatWeekLabel, type Progress } from "@/lib/bingo";
 
 type MeResponse = {
@@ -147,7 +148,8 @@ export default function WeeklySubmit({
   const saved = me?.submission;
 
   return (
-    <section className="w-full max-w-lg mt-10 rounded-xl border border-green-800 bg-green-950/40 p-5 text-gray-50">
+    <>
+      <section className="w-full max-w-lg mt-10 rounded-xl border border-green-800 bg-green-950/40 p-5 text-gray-50">
       <h2 className="text-lg font-bold mb-1">Weekly leaderboard submit</h2>
       <p className="text-sm text-gray-300 mb-4">
         {`Week of ${weekLabel || "…"}. Press the button below to submit your scores to the frog leaderboard.`}
@@ -213,7 +215,9 @@ export default function WeeklySubmit({
           {authError || message}
         </p>
       )}
-    </section>
+      </section>
+      <Leaderboard />
+    </>
   );
 }
 

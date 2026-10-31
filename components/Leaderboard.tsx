@@ -1,0 +1,153 @@
+"use client";
+
+import { useState } from "react";
+import { formatWeekLabel } from "@/lib/bingo";
+
+type LeaderboardWeek = {
+  weekId: string;
+  board1Score: number;
+  board2Score: number;
+  totalScore: number;
+  submittedAt: string;
+};
+
+type LeaderboardEntry = {
+  displayName: string;
+  username: string;
+  lifetimeTotal: number;
+  board1TasksCompleted: number;
+  board2TasksCompleted: number;
+  firstSubmittedAt: string;
+  weeks: LeaderboardWeek[];
+};
+
+export default function Leaderboard() {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [error, setError] = useState("");
+
+  async function toggleLeaderboard() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+
+    setOpen(true);
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/leaderboard", { cache: "no-store" });
+      const data = (await response.json()) as {
+        entries?: LeaderboardEntry[];
+        error?: string;
+      };
+      if (!response.ok) {
+        throw new Error(data.error ?? "Could not load the leaderboard.");
+      }
+      setEntries(data.entries ?? []);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Could not load the leaderboard."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="w-full max-w-lg mt-4">
+      <button
+        type="button"
+        onClick={() => void toggleLeaderboard()}
+        className="w-full px-6 py-3 rounded-xl border border-green-800 bg-green-950/60 text-gray-50 font-semibold hover:bg-green-900 transition-colors"
+        aria-expanded={open}
+      >
+        {open ? "Hide leaderboard" : "View leaderboard"}
+      </button>
+
+      {open && (
+        <section className="mt-3 rounded-xl border border-green-800 bg-green-950/40 p-4 text-gray-50">
+          <h2 className="text-lg font-bold mb-1">Lifetime leaderboard</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Ranked by lifetime points. Earlier first submissions break ties.
+          </p>
+
+          {loading ? (
+            <p className="text-sm text-gray-400">Loading leaderboard...</p>
+          ) : error ? (
+            <p className="text-sm text-amber-200">{error}</p>
+          ) : entries.length === 0 ? (
+            <p className="text-sm text-gray-400">No scores submitted yet.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {entries.map((entry, index) => {
+                const isExpanded = expanded === index;
+                return (
+                  <div
+                    key={`${entry.displayName}-${index}`}
+                    className="rounded-lg border border-green-900 bg-black/20 overflow-hidden"
+                  >
+                    <div className="grid grid-cols-[2rem_1fr_auto] items-center gap-2 p-3">
+                      <span className="text-sm font-bold text-gray-400">
+                        {index + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setExpanded(isExpanded ? null : index)}
+                        className="min-w-0 text-left hover:text-indigo-300"
+                        aria-expanded={isExpanded}
+                      >
+                        <span className="block truncate font-semibold">
+                          {entry.displayName}
+                        </span>
+                        <span className="block truncate text-xs text-gray-500">
+                          @{entry.username}
+                        </span>
+                      </button>
+                      <span className="text-right font-bold text-[#ffd700]">
+                        {entry.lifetimeTotal} pts
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 border-t border-green-900 px-3 py-2 text-xs text-gray-300">
+                      <span>Guild tasks: {entry.board1TasksCompleted}</span>
+                      <span>Progression tasks: {entry.board2TasksCompleted}</span>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="border-t border-green-900 p-3">
+                        <h3 className="text-sm font-semibold mb-2">
+                          Weekly scores
+                        </h3>
+                        <div className="flex flex-col gap-2">
+                          {entry.weeks.map((week) => (
+                            <div
+                              key={week.weekId}
+                              className="grid grid-cols-[1fr_auto] gap-3 text-sm"
+                            >
+                              <span>{formatWeekLabel(week.weekId)}</span>
+                              <span className="text-right text-gray-300">
+                                Guild {week.board1Score} · Progression {week.board2Score} ·{" "}
+                                <strong className="text-gray-50">
+                                  {week.totalScore}
+                                </strong>
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
