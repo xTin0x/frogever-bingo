@@ -41,6 +41,13 @@ export default function AdminBoards({ defaultWeekId }: { defaultWeekId: string }
     }
   }
 
+  /* csv format
+    board1,board2
+    "Guild task 1","Progression task 1"
+    "Guild task 2","Progression task 2"
+    "Guild task 3","Progression task 3"
+    ...
+  */
   async function importCsv(event: React.ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
     const file = input.files?.[0];
