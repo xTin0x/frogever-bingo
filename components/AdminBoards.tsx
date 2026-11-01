@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const TASK_COUNT = 9;
 
@@ -42,6 +43,12 @@ export default function AdminBoards({ defaultWeekId }: { defaultWeekId: string }
   return (
     <main className="min-h-screen bg-[#10251B] p-6 text-gray-50">
       <form onSubmit={saveBoards} className="mx-auto max-w-3xl">
+        <Link
+          href="/"
+          className="mb-6 inline-block text-sm text-gray-300 hover:text-white"
+        >
+          ← Back to home
+        </Link>
         <h1 className="text-3xl font-bold">Weekly board admin</h1>
         <p className="mt-2 text-sm text-gray-300">
           Publish tasks for the current or a future week. Future tasks stay hidden until they become readable.
