@@ -8,6 +8,8 @@ import {
 } from "@/lib/bingo";
 import { defaultBoardTasks } from "@/lib/default-boards";
 
+const DEFAULT_BOARD_SEED_VERSION = "numeric-v1";
+
 export type WeeklyScore = {
   discord_user_id: string;
   discord_username: string;
@@ -82,15 +84,30 @@ export async function ensureSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+  await db`
+    ALTER TABLE weekly_boards
+    ADD COLUMN IF NOT EXISTS seed_version TEXT NOT NULL DEFAULT ''
+  `;
   for (const weekId of [FIRST_WEEK_ID, addWeeks(FIRST_WEEK_ID, 1)]) {
     await db`
-      INSERT INTO weekly_boards (week_id, board1_tasks, board2_tasks)
+      INSERT INTO weekly_boards (
+        week_id,
+        board1_tasks,
+        board2_tasks,
+        seed_version
+      )
       VALUES (
         ${weekId},
         ${JSON.stringify(defaultBoardTasks.board1)}::jsonb,
-        ${JSON.stringify(defaultBoardTasks.board2)}::jsonb
+        ${JSON.stringify(defaultBoardTasks.board2)}::jsonb,
+        ${DEFAULT_BOARD_SEED_VERSION}
       )
-      ON CONFLICT (week_id) DO NOTHING
+      ON CONFLICT (week_id)
+      DO UPDATE SET
+        board1_tasks = EXCLUDED.board1_tasks,
+        board2_tasks = EXCLUDED.board2_tasks,
+        seed_version = EXCLUDED.seed_version
+      WHERE weekly_boards.seed_version = ''
     `;
   }
   schemaReady = true;
@@ -113,16 +130,23 @@ export async function saveWeeklyBoard(input: {
 }): Promise<WeeklyBoard> {
   await ensureSchema();
   const rows = await sql()`
-    INSERT INTO weekly_boards (week_id, board1_tasks, board2_tasks)
+    INSERT INTO weekly_boards (
+      week_id,
+      board1_tasks,
+      board2_tasks,
+      seed_version
+    )
     VALUES (
       ${input.weekId},
       ${JSON.stringify(input.tasks.board1)}::jsonb,
-      ${JSON.stringify(input.tasks.board2)}::jsonb
+      ${JSON.stringify(input.tasks.board2)}::jsonb,
+      'manual'
     )
     ON CONFLICT (week_id)
     DO UPDATE SET
       board1_tasks = EXCLUDED.board1_tasks,
       board2_tasks = EXCLUDED.board2_tasks,
+      seed_version = 'manual',
       updated_at = NOW()
     RETURNING week_id, board1_tasks, board2_tasks, created_at, updated_at
   `;
