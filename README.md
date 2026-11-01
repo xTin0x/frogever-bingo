@@ -30,6 +30,16 @@ Set `BINGO_ADMIN_USER_IDS` to a comma-separated list of Discord user IDs allowed
 
 Future board definitions are stored in the database but are not returned by the public board API until their week begins.
 
+The admin panel also accepts CSV imports in this format:
+
+```csv
+board1,board2
+"Guild task 1","Progression task 1"
+"Guild task 2","Progression task 2"
+```
+
+The file must contain exactly nine task rows. Use double quotes around any task containing commas.
+
 The dev branch currently starts weekly periods at October 21, 2026 at 23:00 GMT and seeds the default boards for October 21 and October 28. The first week is available as a read-only preview before its start time.
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

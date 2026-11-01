@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { parseBoardTasksCsv } from "@/lib/board-csv";
 
 const TASK_COUNT = 9;
 
@@ -40,6 +41,25 @@ export default function AdminBoards({ defaultWeekId }: { defaultWeekId: string }
     }
   }
 
+  async function importCsv(event: React.ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    try {
+      const tasks = parseBoardTasksCsv(await file.text());
+      setBoard1Tasks(tasks.board1);
+      setBoard2Tasks(tasks.board2);
+      setMessage(`Loaded tasks from ${file.name}. Review them before publishing.`);
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Could not parse the CSV file."
+      );
+    } finally {
+      input.value = "";
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#10251B] p-6 text-gray-50">
       <form onSubmit={saveBoards} className="mx-auto max-w-3xl">
@@ -53,6 +73,19 @@ export default function AdminBoards({ defaultWeekId }: { defaultWeekId: string }
         <p className="mt-2 text-sm text-gray-300">
           Publish tasks for the current or a future week. Future tasks stay hidden until they become readable.
         </p>
+
+        <label className="mt-6 block text-sm font-semibold">
+          Import tasks from CSV
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            onChange={(event) => void importCsv(event)}
+            className="mt-2 block w-full rounded-lg border border-green-800 bg-black/30 px-3 py-2 text-sm text-gray-300 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+          />
+          <span className="mt-2 block text-xs font-normal text-gray-400">
+            Format: a header of <code>board1,board2</code>, followed by 9 rows. Quote tasks that contain commas.
+          </span>
+        </label>
 
         <label className="mt-6 block text-sm font-semibold">
           Week ID
