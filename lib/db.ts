@@ -31,6 +31,7 @@ export type WeeklyBoard = {
 };
 
 export type LeaderboardEntry = {
+  discordUserId: string;
   displayName: string;
   username: string;
   lifetimeTotal: number;
@@ -197,6 +198,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     const submittedAt = String(row.created_at);
     const existing = entries.get(row.discord_user_id);
     const entry = existing ?? {
+      discordUserId: row.discord_user_id,
       displayName: row.discord_display_name,
       username: row.discord_username,
       lifetimeTotal: 0,

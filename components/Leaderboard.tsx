@@ -19,6 +19,7 @@ type LeaderboardEntry = {
   board2TasksCompleted: number;
   firstSubmittedAt: string;
   weeks: LeaderboardWeek[];
+  isCurrentUser: boolean;
 };
 
 export default function Leaderboard() {
@@ -89,7 +90,11 @@ export default function Leaderboard() {
                 return (
                   <div
                     key={`${entry.displayName}-${index}`}
-                    className="rounded-lg border border-green-900 bg-black/20 overflow-hidden"
+                    className={`rounded-lg border overflow-hidden ${
+                      entry.isCurrentUser
+                        ? "border-[#ffd700] bg-indigo-950/50"
+                        : "border-green-900 bg-black/20"
+                    }`}
                   >
                     <div className="grid grid-cols-[2rem_1fr_auto] items-center gap-2 p-3">
                       <span className="text-sm font-bold text-gray-400">
@@ -103,6 +108,11 @@ export default function Leaderboard() {
                       >
                         <span className="block truncate font-semibold">
                           {entry.displayName}
+                          {entry.isCurrentUser && (
+                            <span className="ml-2 text-xs font-normal text-[#ffd700]">
+                              (You)
+                            </span>
+                          )}
                         </span>
                         <span className="block truncate text-xs text-gray-500">
                           @{entry.username}

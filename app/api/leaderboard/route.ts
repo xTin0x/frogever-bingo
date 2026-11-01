@@ -1,13 +1,20 @@
 import { connection, NextResponse } from "next/server";
 import { getLeaderboard } from "@/lib/db";
+import { getSession } from "@/lib/session";
 
 export async function GET() {
   await connection();
 
   try {
     const entries = await getLeaderboard();
+    const session = await getSession();
     return NextResponse.json(
-      { entries },
+      {
+        entries: entries.map(({ discordUserId, ...entry }) => ({
+          ...entry,
+          isCurrentUser: session?.discordUserId === discordUserId,
+        })),
+      },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {

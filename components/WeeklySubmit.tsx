@@ -156,11 +156,10 @@ export default function WeeklySubmit({
         {`Week of ${weekLabel || "…"}. Press the button below to submit your scores to the frog leaderboard.`}
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center mb-4">
         <ScoreStat label="Guild" value={board1Score} />
         <ScoreStat label="Progression" value={board2Score} />
         <ScoreStat label="Total" value={totalScore} />
-        <ScoreStat label="Lifetime" value={me?.lifetimeTotal ?? 0} />
       </div>
 
       {saved && (
@@ -225,6 +224,9 @@ export default function WeeklySubmit({
         </p>
       )}
       </section>
+      <p className="w-full max-w-lg mt-4 text-center text-lg font-bold text-[#ffd700]">
+        Total Points: {me?.lifetimeTotal ?? 0}
+      </p>
       <Leaderboard />
     </>
   );
