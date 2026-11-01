@@ -59,7 +59,7 @@ export default function AdminBoards({ defaultWeekId }: { defaultWeekId: string }
           <input
             value={weekId}
             onChange={(event) => setWeekId(event.target.value)}
-            pattern="\\d{4}-\\d{2}-\\d{2}"
+            pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}"
             required
             className="mt-2 w-full rounded-lg border border-green-800 bg-black/30 px-3 py-2 text-gray-50"
           />
