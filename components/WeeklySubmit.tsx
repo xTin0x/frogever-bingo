@@ -151,7 +151,7 @@ export default function WeeklySubmit({
   return (
     <>
       <section className="w-full max-w-lg mt-10 rounded-xl border border-green-800 bg-green-950/40 p-5 text-gray-50">
-      <h2 className="text-lg font-bold mb-1">Weekly leaderboard submit</h2>
+      <h2 className="text-lg font-bold mb-1">Submit your Scores!</h2>
       <p className="text-sm text-gray-300 mb-4">
         {`Week of ${weekLabel || "…"}. Boards are saved locally. Connect your Discord account to submit your scores to the leaderboard.`}
       </p>
@@ -159,7 +159,7 @@ export default function WeeklySubmit({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center mb-4">
         <ScoreStat label="Guild" value={board1Score} />
         <ScoreStat label="Progression" value={board2Score} />
-        <ScoreStat label="Total" value={totalScore} />
+        <ScoreStat label="Week Total" value={totalScore} />
       </div>
 
       {saved && (

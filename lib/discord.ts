@@ -148,12 +148,12 @@ export async function postSubmissionWebhook(input: {
               inline: true,
             },
             {
-              name: "Total",
+              name: "Weekly Points",
               value: `**${input.totalScore} / 20**`,
               inline: true,
             },
             {
-              name: "Lifetime Total",
+              name: "Total Points",
               value: `**${input.lifetimeTotal}**`,
               inline: true,
             },

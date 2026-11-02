@@ -251,6 +251,9 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     .sort(
       (left, right) =>
         right.lifetimeTotal - left.lifetimeTotal ||
+        right.board1TasksCompleted +
+          right.board2TasksCompleted -
+          (left.board1TasksCompleted + left.board2TasksCompleted) ||
         left.firstSubmittedAt.localeCompare(right.firstSubmittedAt)
     )
     .map((entry) => ({
