@@ -16,11 +16,11 @@ export type BoardTasks = Record<BoardId, string[]>;
 export type Progress = Record<BoardId, boolean[]>;
 
 export const STORAGE_KEY = "bingo-progress";
-export const FIRST_WEEK_ID = "2026-10-28";
+export const FIRST_WEEK_ID = "2026-11-04";
 
 const WEEK_LENGTH_MS = 7 * 24 * 60 * 60 * 1000;
-const WEEK_PREVIEW_WINDOW_MS = 5 * 24 * 60 * 60 * 1000;
-const WEEK_START_ANCHOR_MS = Date.parse("2026-10-28T23:00:00.000Z");
+const WEEK_PREVIEW_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
+const WEEK_START_ANCHOR_MS = Date.parse("2026-11-04T23:00:00.000Z");
 
 export const initialProgress: Progress = {
   board1: Array(9).fill(false),
@@ -91,7 +91,7 @@ export function isWeekId(value: unknown): value is string {
 }
 
 /**
- * Dev weeks start every seven days from Oct 28, 2026 at 23:00 GMT.
+ * Dev weeks start every seven days from Nov 4, 2026 at 23:00 GMT.
  */
 export function getWeekId(now = new Date()): string {
   const periodsSinceAnchor = Math.max(
