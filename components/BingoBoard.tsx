@@ -288,7 +288,7 @@ export default function BingoBoard() {
           progress={progress}
           weekId={selectedWeekId}
           locked={locked}
-          previewOnly={selectedWeekId > currentWeekId}
+          previewOnly={!isWeekStarted(selectedWeekId)}
         />
       </main>
     );
@@ -372,7 +372,7 @@ export default function BingoBoard() {
 
         {locked && (
           <p className="mt-5 text-sm font-semibold text-amber-200 text-center">
-            {selectedWeekId > currentWeekId
+            {!isWeekStarted(selectedWeekId)
               ? `Submissions for this week open on ${formatWeekStartLabel(
                   selectedWeekId
                 )}.`

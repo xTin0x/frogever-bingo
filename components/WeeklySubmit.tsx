@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Leaderboard from "@/components/Leaderboard";
-import { boardScore, formatWeekLabel, type Progress } from "@/lib/bingo";
+import {
+  boardScore,
+  formatWeekLabel,
+  formatWeekStartLabel,
+  type Progress,
+} from "@/lib/bingo";
 
 type MeResponse = {
   user: {
@@ -172,7 +177,7 @@ export default function WeeklySubmit({
       {locked ? (
         <p className="text-sm text-amber-200">
           {previewOnly
-            ? "Preview only until this week starts."
+            ? `Submissions for this week open on ${formatWeekStartLabel(weekId)}.`
             : "This week is closed. Past weeks are read-only."}
         </p>
       ) : loading || me?.weekId !== weekId ? (
