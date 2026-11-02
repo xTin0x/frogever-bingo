@@ -12,8 +12,16 @@ import {
   getWeeklyBoard,
   upsertWeeklyScore,
 } from "@/lib/db";
-import { postSubmissionWebhook } from "@/lib/discord";
-import { decodeSession, SESSION_COOKIE } from "@/lib/session";
+import {
+  fetchDiscordGuildMemberByUserId,
+  postSubmissionWebhook,
+} from "@/lib/discord";
+import {
+  decodeSession,
+  encodeSession,
+  SESSION_COOKIE,
+  sessionCookieOptions,
+} from "@/lib/session";
 
 export async function POST(request: Request) {
   const store = await cookies();
@@ -75,6 +83,20 @@ export async function POST(request: Request) {
   const totalScore = board1Score + board2Score;
 
   try {
+    const member = await fetchDiscordGuildMemberByUserId(
+      session.discordUserId
+    );
+    if (!member) {
+      return NextResponse.json(
+        { error: "Your Discord account is no longer in the frog server." },
+        { status: 401 }
+      );
+    }
+
+    const username = member.user?.username ?? session.username;
+    const displayName =
+      member.nick ?? member.user?.global_name ?? username;
+
     const board = await getWeeklyBoard(weekId);
     if (!board) {
       return NextResponse.json(
@@ -85,8 +107,8 @@ export async function POST(request: Request) {
 
     const { score, updated } = await upsertWeeklyScore({
       discordUserId: session.discordUserId,
-      username: session.username,
-      displayName: session.displayName,
+      username,
+      displayName,
       weekId,
       board1Score,
       board2Score,
@@ -96,8 +118,8 @@ export async function POST(request: Request) {
     const lifetimeTotal = await getLifetimeTotal(session.discordUserId);
 
     const discordPosted = await postSubmissionWebhook({
-      displayName: session.displayName,
-      username: session.username,
+      displayName,
+      username,
       weekId,
       board1Score,
       board2Score,
@@ -106,12 +128,22 @@ export async function POST(request: Request) {
       updated,
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       ok: true,
       updated,
       discordPosted,
       submission: score,
     });
+    response.cookies.set(
+      SESSION_COOKIE,
+      encodeSession({
+        ...session,
+        username,
+        displayName,
+      }),
+      sessionCookieOptions()
+    );
+    return response;
   } catch (error) {
     console.error("Weekly score submit failed:", error);
     return NextResponse.json(

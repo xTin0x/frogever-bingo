@@ -29,6 +29,10 @@ export function getDiscordOAuthConfig() {
   };
 }
 
+export function getDiscordBotToken(): string {
+  return required("DISCORD_BOT_TOKEN");
+}
+
 export function getDiscordWebhookUrl(): string {
   const webhookUrl =
     process.env.DISCORD_WEBHOOK_URL?.trim() ??

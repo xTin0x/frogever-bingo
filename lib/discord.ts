@@ -1,5 +1,6 @@
 import { formatWeekLabel } from "@/lib/bingo";
 import {
+  getDiscordBotToken,
   getDiscordOAuthConfig,
   getDiscordWebhookUrl,
   getRedirectUri,
@@ -17,6 +18,10 @@ export type DiscordUser = {
 
 export type DiscordGuildMember = {
   nick: string | null;
+  user?: {
+    username: string;
+    global_name: string | null;
+  };
 };
 
 export function discordAuthorizeUrl(request: Request, state: string): string {
@@ -85,6 +90,25 @@ export async function fetchDiscordGuildMember(
   if (response.status === 404) return null;
   if (!response.ok) {
     throw new Error("Failed to fetch Discord server membership");
+  }
+  return (await response.json()) as DiscordGuildMember;
+}
+
+export async function fetchDiscordGuildMemberByUserId(
+  userId: string
+): Promise<DiscordGuildMember | null> {
+  const { guildId } = getDiscordOAuthConfig();
+  const response = await fetch(
+    `${DISCORD_API}/guilds/${guildId}/members/${encodeURIComponent(userId)}`,
+    {
+      headers: { Authorization: `Bot ${getDiscordBotToken()}` },
+      cache: "no-store",
+    }
+  );
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error("Failed to fetch Discord server member");
   }
   return (await response.json()) as DiscordGuildMember;
 }
