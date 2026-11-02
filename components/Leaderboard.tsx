@@ -72,9 +72,9 @@ export default function Leaderboard() {
 
       {open && (
         <section className="mt-3 rounded-xl border border-green-800 bg-green-950/40 p-4 text-gray-50">
-          <h2 className="text-lg font-bold mb-1">Lifetime leaderboard</h2>
+          <h2 className="text-lg font-bold mb-1">🐸 Leaderboard</h2>
           <p className="text-sm text-gray-400 mb-4">
-            Ranked by lifetime points. Earlier first submissions break ties.
+            Click on a name to view more details.
           </p>
 
           {loading ? (
