@@ -123,6 +123,20 @@ function getWeekStartTime(weekId: string): number {
   return Date.parse(`${weekId}T23:00:00.000Z`);
 }
 
+export function formatWeekStartLabel(weekId: string): string {
+  const date = new Date(getWeekStartTime(weekId));
+  if (Number.isNaN(date.getTime())) return weekId;
+
+  return `${date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })} at ${date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  })}`;
+}
+
 export function addWeeks(weekId: string, amount: number): string {
   const date = new Date(`${weekId}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + amount * 7);

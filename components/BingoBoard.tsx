@@ -10,6 +10,7 @@ import {
   completedLineCount,
   FIRST_WEEK_ID,
   formatWeekLabel,
+  formatWeekStartLabel,
   getWeekId,
   initialProgress,
   isBoardTasks,
@@ -371,7 +372,11 @@ export default function BingoBoard() {
 
         {locked && (
           <p className="mt-5 text-sm font-semibold text-amber-200 text-center">
-            This week is closed. Past weeks are read-only.
+            {selectedWeekId > currentWeekId
+              ? `Submissions for this week open on ${formatWeekStartLabel(
+                  selectedWeekId
+                )}.`
+              : "This week is closed. Past weeks are read-only."}
           </p>
         )}
 
