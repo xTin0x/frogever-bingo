@@ -21,13 +21,24 @@ export function getAppUrl(request: Request): string {
   return `${proto}://${host}`;
 }
 
-export function getDiscordConfig() {
+export function getDiscordOAuthConfig() {
   return {
     clientId: required("DISCORD_CLIENT_ID"),
     clientSecret: required("DISCORD_CLIENT_SECRET"),
     guildId: required("DISCORD_GUILD_ID"),
-    webhookUrl: required("DISCORD_WEBHOOK_URL"),
   };
+}
+
+export function getDiscordWebhookUrl(): string {
+  const webhookUrl =
+    process.env.DISCORD_WEBHOOK_URL?.trim() ??
+    process.env.DISCORD_WEBHOOK?.trim();
+  if (!webhookUrl) {
+    throw new Error(
+      "Missing required environment variable: DISCORD_WEBHOOK_URL"
+    );
+  }
+  return webhookUrl;
 }
 
 export function getDatabaseUrl(): string {

@@ -1,5 +1,9 @@
 import { formatWeekLabel } from "@/lib/bingo";
-import { getDiscordConfig, getRedirectUri } from "@/lib/env";
+import {
+  getDiscordOAuthConfig,
+  getDiscordWebhookUrl,
+  getRedirectUri,
+} from "@/lib/env";
 
 const DISCORD_API = "https://discord.com/api/v10";
 const OAUTH_SCOPES = "identify guilds.members.read";
@@ -16,7 +20,7 @@ export type DiscordGuildMember = {
 };
 
 export function discordAuthorizeUrl(request: Request, state: string): string {
-  const { clientId } = getDiscordConfig();
+  const { clientId } = getDiscordOAuthConfig();
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: getRedirectUri(request),
@@ -29,7 +33,7 @@ export function discordAuthorizeUrl(request: Request, state: string): string {
 }
 
 export async function exchangeDiscordCode(request: Request, code: string) {
-  const { clientId, clientSecret } = getDiscordConfig();
+  const { clientId, clientSecret } = getDiscordOAuthConfig();
   const body = new URLSearchParams({
     client_id: clientId,
     client_secret: clientSecret,
@@ -69,7 +73,7 @@ export async function fetchDiscordUser(accessToken: string): Promise<DiscordUser
 export async function fetchDiscordGuildMember(
   accessToken: string
 ): Promise<DiscordGuildMember | null> {
-  const { guildId } = getDiscordConfig();
+  const { guildId } = getDiscordOAuthConfig();
   const response = await fetch(
     `${DISCORD_API}/users/@me/guilds/${guildId}/member`,
     {
@@ -95,7 +99,7 @@ export async function postSubmissionWebhook(input: {
   lifetimeTotal: number;
   updated: boolean;
 }): Promise<boolean> {
-  const { webhookUrl } = getDiscordConfig();
+  const webhookUrl = getDiscordWebhookUrl();
   const response = await fetch(`${webhookUrl}?wait=true`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
