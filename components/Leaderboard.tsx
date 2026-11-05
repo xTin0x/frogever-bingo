@@ -147,7 +147,7 @@ export default function Leaderboard() {
                         >
                           <span className="block truncate font-semibold">
                             {entry.displayName}
-                            {entry.isCurrentUser && (
+                            {entry.isCurrentUser && !isAdmin && (
                               <span className="ml-2 text-xs font-normal text-[#ffd700]">
                                 (You)
                               </span>
