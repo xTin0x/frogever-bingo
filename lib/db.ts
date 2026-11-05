@@ -201,9 +201,9 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
       total_score,
       board1_progress,
       board2_progress,
-      created_at
+      updated_at
     FROM weekly_scores
-    ORDER BY created_at ASC
+    ORDER BY updated_at ASC
   `;
 
   const entries = new Map<string, LeaderboardEntry>();
@@ -217,9 +217,9 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     total_score: number;
     board1_progress: unknown;
     board2_progress: unknown;
-    created_at: string;
+    updated_at: string;
   }>) {
-    const submittedAt = String(row.created_at);
+    const submittedAt = String(row.updated_at);
     const existing = entries.get(row.discord_user_id);
     const entry = existing ?? {
       discordUserId: row.discord_user_id,
@@ -231,6 +231,10 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
       firstSubmittedAt: submittedAt,
       weeks: [],
     };
+
+    if (Date.parse(submittedAt) < Date.parse(entry.firstSubmittedAt)) {
+      entry.firstSubmittedAt = submittedAt;
+    }
 
     entry.displayName = row.discord_display_name;
     entry.username = row.discord_username;
@@ -254,7 +258,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
         right.board1TasksCompleted +
           right.board2TasksCompleted -
           (left.board1TasksCompleted + left.board2TasksCompleted) ||
-        left.firstSubmittedAt.localeCompare(right.firstSubmittedAt)
+        Date.parse(left.firstSubmittedAt) - Date.parse(right.firstSubmittedAt)
     )
     .map((entry) => ({
       ...entry,
