@@ -1,5 +1,6 @@
 import { connection, NextResponse } from "next/server";
 import { getLeaderboard } from "@/lib/db";
+import { isBingoAdminUser } from "@/lib/env";
 import { getSession } from "@/lib/session";
 
 export async function GET() {
@@ -10,6 +11,7 @@ export async function GET() {
     const session = await getSession();
     return NextResponse.json(
       {
+        isAdmin: session ? isBingoAdminUser(session.discordUserId) : false,
         entries: entries.map(({ discordUserId, ...entry }) => ({
           ...entry,
           isCurrentUser: session?.discordUserId === discordUserId,
