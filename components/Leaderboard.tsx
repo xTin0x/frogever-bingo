@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toBlob } from "html-to-image";
 import { formatWeekLabel } from "@/lib/bingo";
 
@@ -23,7 +23,13 @@ type LeaderboardEntry = {
   isCurrentUser: boolean;
 };
 
-export default function Leaderboard({ adminView }: { adminView: boolean }) {
+export default function Leaderboard({
+  adminView,
+  weekId: selectedWeekId,
+}: {
+  adminView: boolean;
+  weekId: string;
+}) {
   const leaderboardRef = useRef<HTMLDivElement>(null);
   const requestId = useRef(0);
   const [open, setOpen] = useState(false);
@@ -38,6 +44,57 @@ export default function Leaderboard({ adminView }: { adminView: boolean }) {
   const [copyMessage, setCopyMessage] = useState("");
   const hideCurrentUser = isAdmin && adminView;
 
+  useEffect(() => {
+    if (!open) return;
+
+    const currentRequestId = ++requestId.current;
+
+    async function loadLeaderboard() {
+      try {
+        const response = await fetch(
+          `/api/leaderboard${
+            period === "weekly"
+              ? `?period=weekly&weekId=${encodeURIComponent(selectedWeekId)}`
+              : ""
+          }`,
+          { cache: "no-store" }
+        );
+        const data = (await response.json()) as {
+          entries?: LeaderboardEntry[];
+          error?: string;
+          isAdmin?: boolean;
+          weekId?: string;
+        };
+        if (!response.ok) {
+          throw new Error(data.error ?? "Could not load the leaderboard.");
+        }
+        if (requestId.current !== currentRequestId) return;
+        setEntries(data.entries ?? []);
+        setIsAdmin(data.isAdmin === true);
+        setWeekId(data.weekId ?? null);
+        setError("");
+      } catch (requestError) {
+        if (requestId.current !== currentRequestId) return;
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Could not load the leaderboard."
+        );
+      } finally {
+        if (requestId.current === currentRequestId) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadLeaderboard();
+    return () => {
+      if (requestId.current === currentRequestId) {
+        requestId.current += 1;
+      }
+    };
+  }, [open, period, selectedWeekId]);
+
   async function toggleLeaderboard(nextPeriod: "weekly" | "all-time") {
     if (open && period === nextPeriod) {
       requestId.current += 1;
@@ -46,42 +103,11 @@ export default function Leaderboard({ adminView }: { adminView: boolean }) {
       return;
     }
 
-    const currentRequestId = ++requestId.current;
     setOpen(true);
     setPeriod(nextPeriod);
     setExpanded(null);
     setLoading(true);
     setError("");
-    try {
-      const response = await fetch(
-        `/api/leaderboard${nextPeriod === "weekly" ? "?period=weekly" : ""}`,
-        { cache: "no-store" }
-      );
-      const data = (await response.json()) as {
-        entries?: LeaderboardEntry[];
-        error?: string;
-        isAdmin?: boolean;
-        weekId?: string;
-      };
-      if (!response.ok) {
-        throw new Error(data.error ?? "Could not load the leaderboard.");
-      }
-      if (requestId.current !== currentRequestId) return;
-      setEntries(data.entries ?? []);
-      setIsAdmin(data.isAdmin === true);
-      setWeekId(data.weekId ?? null);
-    } catch (requestError) {
-      if (requestId.current !== currentRequestId) return;
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Could not load the leaderboard."
-      );
-    } finally {
-      if (requestId.current === currentRequestId) {
-        setLoading(false);
-      }
-    }
   }
 
   async function copyScreenshot() {
@@ -228,14 +254,12 @@ export default function Leaderboard({ adminView }: { adminView: boolean }) {
                         </span>
                       </div>
 
-                      {period === "all-time" && (
-                        <div className="grid grid-cols-2 gap-2 border-t border-green-900 px-3 py-2 text-xs text-gray-300">
-                          <span>Guild tasks: {entry.board1TasksCompleted}</span>
-                          <span>
-                            Progression tasks: {entry.board2TasksCompleted}
-                          </span>
-                        </div>
-                      )}
+                      <div className="grid grid-cols-2 gap-2 border-t border-green-900 px-3 py-2 text-xs text-gray-300">
+                        <span>Guild tasks: {entry.board1TasksCompleted}</span>
+                        <span>
+                          Progression tasks: {entry.board2TasksCompleted}
+                        </span>
+                      </div>
 
                       {period === "all-time" && isExpanded && (
                         <div className="border-t border-green-900 p-3">
