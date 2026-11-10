@@ -242,7 +242,7 @@ export default function WeeklySubmit({
       <p className="w-full max-w-lg mt-4 text-center text-lg font-bold text-[#ffd700]">
         Total Points: {me?.lifetimeTotal ?? 0}
       </p>
-      <Leaderboard adminView={adminLeaderboardView} />
+      <Leaderboard adminView={adminLeaderboardView} weekId={weekId} />
     </>
   );
 }
