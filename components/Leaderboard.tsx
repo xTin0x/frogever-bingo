@@ -25,44 +25,60 @@ type LeaderboardEntry = {
 
 export default function Leaderboard() {
   const leaderboardRef = useRef<HTMLDivElement>(null);
+  const requestId = useRef(0);
   const [open, setOpen] = useState(false);
+  const [period, setPeriod] = useState<"weekly" | "all-time">("all-time");
   const [loading, setLoading] = useState(false);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [weekId, setWeekId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [copying, setCopying] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
 
-  async function toggleLeaderboard() {
-    if (open) {
+  async function toggleLeaderboard(nextPeriod: "weekly" | "all-time") {
+    if (open && period === nextPeriod) {
+      requestId.current += 1;
+      setLoading(false);
       setOpen(false);
       return;
     }
 
+    const currentRequestId = ++requestId.current;
     setOpen(true);
+    setPeriod(nextPeriod);
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/leaderboard", { cache: "no-store" });
+      const response = await fetch(
+        `/api/leaderboard${nextPeriod === "weekly" ? "?period=weekly" : ""}`,
+        { cache: "no-store" }
+      );
       const data = (await response.json()) as {
         entries?: LeaderboardEntry[];
         error?: string;
         isAdmin?: boolean;
+        weekId?: string;
       };
       if (!response.ok) {
         throw new Error(data.error ?? "Could not load the leaderboard.");
       }
+      if (requestId.current !== currentRequestId) return;
       setEntries(data.entries ?? []);
       setIsAdmin(data.isAdmin === true);
+      setWeekId(data.weekId ?? null);
     } catch (requestError) {
+      if (requestId.current !== currentRequestId) return;
       setError(
         requestError instanceof Error
           ? requestError.message
           : "Could not load the leaderboard."
       );
     } finally {
-      setLoading(false);
+      if (requestId.current === currentRequestId) {
+        setLoading(false);
+      }
     }
   }
 
@@ -99,25 +115,62 @@ export default function Leaderboard() {
 
   return (
     <div className="w-full max-w-lg mt-4">
-      <button
-        type="button"
-        onClick={() => void toggleLeaderboard()}
-        className="w-full px-6 py-3 rounded-xl border border-green-800 bg-green-950/60 text-gray-50 font-semibold hover:bg-green-900 transition-colors"
-        aria-expanded={open}
-      >
-        {open ? "Hide leaderboard" : "View leaderboard"}
-      </button>
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => void toggleLeaderboard("weekly")}
+          className={`rounded-xl border px-3 py-3 font-semibold transition-colors ${
+            open && period === "weekly"
+              ? "border-amber-400 bg-amber-400 text-green-950"
+              : "border-amber-700 bg-green-950/60 text-amber-100 hover:bg-green-900"
+          }`}
+          aria-expanded={open && period === "weekly"}
+          aria-controls="leaderboard-panel"
+        >
+          {open && period === "weekly" ? "Hide weekly" : "Weekly leaderboard"}
+        </button>
+        <button
+          type="button"
+          onClick={() => void toggleLeaderboard("all-time")}
+          className={`rounded-xl border px-3 py-3 font-semibold transition-colors ${
+            open && period === "all-time"
+              ? "border-indigo-400 bg-indigo-600 text-white"
+              : "border-indigo-800 bg-indigo-950/60 text-indigo-100 hover:bg-indigo-900"
+          }`}
+          aria-expanded={open && period === "all-time"}
+          aria-controls="leaderboard-panel"
+        >
+          {open && period === "all-time"
+            ? "Hide all-time"
+            : "All-time leaderboard"}
+        </button>
+      </div>
 
       {open && (
-        <section className="mt-3 rounded-xl border border-green-800 bg-green-950/40 p-4 text-gray-50">
+        <section
+          id="leaderboard-panel"
+          className={`mt-3 rounded-xl border p-4 text-gray-50 ${
+            period === "weekly"
+              ? "border-amber-800 bg-green-950/40"
+              : "border-indigo-800 bg-indigo-950/40"
+          }`}
+        >
           <div ref={leaderboardRef}>
-            <h2 className="text-lg font-bold mb-1">🐸 Leaderboard</h2>
+            <h2 className="text-lg font-bold mb-1">
+              {period === "weekly"
+                ? `🐸 Weekly leaderboard${weekId ? ` · ${formatWeekLabel(weekId)}` : ""}`
+                : "🐸 All-time leaderboard"}
+            </h2>
             <p className="text-sm text-gray-400 mb-4">
-              Click on a name to view more details.
+              {period === "weekly"
+                ? "Ranked by scores submitted this week."
+                : "Click on a name to view more details."}
             </p>
 
             {loading ? (
-              <p className="text-sm text-gray-400">Loading leaderboard...</p>
+              <p className="text-sm text-gray-400">
+                Loading {period === "weekly" ? "weekly" : "all-time"} leaderboard...
+              </p>
             ) : error ? (
               <p className="text-sm text-amber-200">{error}</p>
             ) : entries.length === 0 ? (
@@ -159,6 +212,7 @@ export default function Leaderboard() {
                         </button>
                         <span className="text-right font-bold text-[#ffd700]">
                           {entry.lifetimeTotal} pts
+                          {period === "weekly" ? " this week" : ""}
                         </span>
                       </div>
 
