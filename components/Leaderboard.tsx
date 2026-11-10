@@ -23,7 +23,7 @@ type LeaderboardEntry = {
   isCurrentUser: boolean;
 };
 
-export default function Leaderboard() {
+export default function Leaderboard({ adminView }: { adminView: boolean }) {
   const leaderboardRef = useRef<HTMLDivElement>(null);
   const requestId = useRef(0);
   const [open, setOpen] = useState(false);
@@ -36,6 +36,7 @@ export default function Leaderboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [copying, setCopying] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
+  const hideCurrentUser = isAdmin && adminView;
 
   async function toggleLeaderboard(nextPeriod: "weekly" | "all-time") {
     if (open && period === nextPeriod) {
@@ -48,6 +49,7 @@ export default function Leaderboard() {
     const currentRequestId = ++requestId.current;
     setOpen(true);
     setPeriod(nextPeriod);
+    setExpanded(null);
     setLoading(true);
     setError("");
     try {
@@ -179,11 +181,26 @@ export default function Leaderboard() {
               <div className="flex flex-col gap-2">
                 {entries.map((entry, index) => {
                   const isExpanded = expanded === index;
+                  const nameContent = (
+                    <>
+                      <span className="block truncate font-semibold">
+                        {entry.displayName}
+                        {entry.isCurrentUser && !hideCurrentUser && (
+                          <span className="ml-2 text-xs font-normal text-[#ffd700]">
+                            (You)
+                          </span>
+                        )}
+                      </span>
+                      <span className="block truncate text-xs text-gray-500">
+                        @{entry.username}
+                      </span>
+                    </>
+                  );
                   return (
                     <div
                       key={`${entry.displayName}-${index}`}
                       className={`rounded-lg border overflow-hidden ${
-                        entry.isCurrentUser && !isAdmin
+                        entry.isCurrentUser && !hideCurrentUser
                           ? "border-[#ffd700] bg-indigo-950/50"
                           : "border-green-900 bg-black/20"
                       }`}
@@ -192,38 +209,36 @@ export default function Leaderboard() {
                         <span className="text-sm font-bold text-gray-400">
                           {index + 1}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => setExpanded(isExpanded ? null : index)}
-                          className="min-w-0 text-left hover:text-indigo-300"
-                          aria-expanded={isExpanded}
-                        >
-                          <span className="block truncate font-semibold">
-                            {entry.displayName}
-                            {entry.isCurrentUser && !isAdmin && (
-                              <span className="ml-2 text-xs font-normal text-[#ffd700]">
-                                (You)
-                              </span>
-                            )}
-                          </span>
-                          <span className="block truncate text-xs text-gray-500">
-                            @{entry.username}
-                          </span>
-                        </button>
+                        {period === "all-time" ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpanded(isExpanded ? null : index)
+                            }
+                            className="min-w-0 text-left hover:text-indigo-300"
+                            aria-expanded={isExpanded}
+                          >
+                            {nameContent}
+                          </button>
+                        ) : (
+                          <div className="min-w-0 text-left">{nameContent}</div>
+                        )}
                         <span className="text-right font-bold text-[#ffd700]">
                           {entry.lifetimeTotal} pts
                           {period === "weekly" ? " this week" : ""}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 border-t border-green-900 px-3 py-2 text-xs text-gray-300">
-                        <span>Guild tasks: {entry.board1TasksCompleted}</span>
-                        <span>
-                          Progression tasks: {entry.board2TasksCompleted}
-                        </span>
-                      </div>
+                      {period === "all-time" && (
+                        <div className="grid grid-cols-2 gap-2 border-t border-green-900 px-3 py-2 text-xs text-gray-300">
+                          <span>Guild tasks: {entry.board1TasksCompleted}</span>
+                          <span>
+                            Progression tasks: {entry.board2TasksCompleted}
+                          </span>
+                        </div>
+                      )}
 
-                      {isExpanded && (
+                      {period === "all-time" && isExpanded && (
                         <div className="border-t border-green-900 p-3">
                           <h3 className="text-sm font-semibold mb-2">
                             Weekly scores

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { toBlob } from "html-to-image";
 import WeeklySubmit from "@/components/WeeklySubmit";
 import {
@@ -35,6 +35,13 @@ export default function BingoBoard() {
   const [weeklyTasks, setWeeklyTasks] = useState<BoardTasks | null>(null);
   const [loadedTasksWeekId, setLoadedTasksWeekId] = useState<string | null>(null);
   const [boardError, setBoardError] = useState("");
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [adminLeaderboardView, setAdminLeaderboardView] = useState(false);
+
+  const handleAdminStatusChange = useCallback((isAdmin: boolean) => {
+    setIsAdminUser(isAdmin);
+    if (!isAdmin) setAdminLeaderboardView(false);
+  }, []);
 
   useEffect(() => {
     function updateCurrentWeek() {
@@ -226,6 +233,22 @@ export default function BingoBoard() {
   if (!selectedBoard) {
     return (
       <main className="min-h-screen bg-[#10251B] flex flex-col items-center justify-center p-6">
+        {isAdminUser && (
+          <div className="fixed right-4 top-4 z-10">
+            <button
+              type="button"
+              onClick={() => setAdminLeaderboardView((view) => !view)}
+              aria-pressed={adminLeaderboardView}
+              className={`rounded-xl border px-4 py-2 text-sm font-semibold shadow-lg transition-colors ${
+                adminLeaderboardView
+                  ? "border-indigo-300 bg-indigo-600 text-white hover:bg-indigo-700"
+                  : "border-indigo-700 bg-green-950 text-indigo-100 hover:bg-indigo-900"
+              }`}
+            >
+              Admin leaderboard view: {adminLeaderboardView ? "On" : "Off"}
+            </button>
+          </div>
+        )}
         <WeekSelector
           currentWeekId={currentWeekId}
           selectedWeekId={selectedWeekId}
@@ -289,6 +312,8 @@ export default function BingoBoard() {
           weekId={selectedWeekId}
           locked={locked}
           previewOnly={!isWeekStarted(selectedWeekId)}
+          onAdminStatusChange={handleAdminStatusChange}
+          adminLeaderboardView={adminLeaderboardView}
         />
       </main>
     );
