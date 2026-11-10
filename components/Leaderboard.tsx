@@ -225,7 +225,6 @@ export default function Leaderboard({ adminView }: { adminView: boolean }) {
                         )}
                         <span className="text-right font-bold text-[#ffd700]">
                           {entry.lifetimeTotal} pts
-                          {period === "weekly" ? " this week" : ""}
                         </span>
                       </div>
 
