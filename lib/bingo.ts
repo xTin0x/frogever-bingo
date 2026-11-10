@@ -19,7 +19,7 @@ export const STORAGE_KEY = "bingo-progress";
 export const FIRST_WEEK_ID = "2026-11-04";
 
 const WEEK_LENGTH_MS = 7 * 24 * 60 * 60 * 1000;
-const WEEK_PREVIEW_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
+const WEEK_PREVIEW_WINDOW_MS = 24 * 60 * 60 * 1000;
 const WEEK_START_ANCHOR_MS = Date.parse("2026-11-04T23:00:00.000Z");
 
 export const initialProgress: Progress = {

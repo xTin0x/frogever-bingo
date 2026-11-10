@@ -188,7 +188,7 @@ export async function getLifetimeTotal(discordUserId: string): Promise<number> {
   return Number(rows[0]?.lifetime_total ?? 0);
 }
 
-export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
+export async function getLeaderboard(weekId?: string): Promise<LeaderboardEntry[]> {
   await ensureSchema();
   const rows = await sql()`
     SELECT
@@ -203,6 +203,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
       board2_progress,
       updated_at
     FROM weekly_scores
+    WHERE (${weekId ?? null}::TEXT IS NULL OR week_id = ${weekId ?? null})
     ORDER BY updated_at ASC
   `;
 

@@ -41,6 +41,8 @@ type WeeklySubmitProps = {
   weekId: string;
   locked: boolean;
   previewOnly: boolean;
+  onAdminStatusChange: (isAdmin: boolean) => void;
+  adminLeaderboardView: boolean;
 };
 
 export default function WeeklySubmit({
@@ -48,6 +50,8 @@ export default function WeeklySubmit({
   weekId,
   locked,
   previewOnly,
+  onAdminStatusChange,
+  adminLeaderboardView,
 }: WeeklySubmitProps) {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,8 +76,10 @@ export default function WeeklySubmit({
       );
       const data = (await response.json()) as MeResponse;
       setMe(data);
+      onAdminStatusChange(data.isAdmin === true);
     } catch {
       setMe(null);
+      onAdminStatusChange(false);
       setMessage("Could not check Discord login.");
     } finally {
       setLoading(false);
@@ -91,11 +97,15 @@ export default function WeeklySubmit({
     })
       .then((response) => response.json())
       .then((data: MeResponse) => {
-        if (!cancelled) setMe(data);
+        if (!cancelled) {
+          setMe(data);
+          onAdminStatusChange(data.isAdmin === true);
+        }
       })
       .catch(() => {
         if (!cancelled) {
           setMe(null);
+          onAdminStatusChange(false);
           setMessage("Could not check Discord login.");
         }
       })
@@ -106,7 +116,7 @@ export default function WeeklySubmit({
     return () => {
       cancelled = true;
     };
-  }, [weekId]);
+  }, [weekId, onAdminStatusChange]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -232,7 +242,7 @@ export default function WeeklySubmit({
       <p className="w-full max-w-lg mt-4 text-center text-lg font-bold text-[#ffd700]">
         Total Points: {me?.lifetimeTotal ?? 0}
       </p>
-      <Leaderboard />
+      <Leaderboard adminView={adminLeaderboardView} />
     </>
   );
 }
