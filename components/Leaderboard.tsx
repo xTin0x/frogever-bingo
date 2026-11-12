@@ -18,7 +18,7 @@ type LeaderboardEntry = {
   lifetimeTotal: number;
   board1TasksCompleted: number;
   board2TasksCompleted: number;
-  firstSubmittedAt: string;
+  lastSubmittedAt: string;
   weeks: LeaderboardWeek[];
   isCurrentUser: boolean;
 };

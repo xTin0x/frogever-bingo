@@ -39,7 +39,7 @@ export type LeaderboardEntry = {
   lifetimeTotal: number;
   board1TasksCompleted: number;
   board2TasksCompleted: number;
-  firstSubmittedAt: string;
+  lastSubmittedAt: string;
   weeks: Array<{
     weekId: string;
     board1Score: number;
@@ -229,12 +229,12 @@ export async function getLeaderboard(weekId?: string): Promise<LeaderboardEntry[
       lifetimeTotal: 0,
       board1TasksCompleted: 0,
       board2TasksCompleted: 0,
-      firstSubmittedAt: submittedAt,
+      lastSubmittedAt: submittedAt,
       weeks: [],
     };
 
-    if (Date.parse(submittedAt) < Date.parse(entry.firstSubmittedAt)) {
-      entry.firstSubmittedAt = submittedAt;
+    if (Date.parse(submittedAt) > Date.parse(entry.lastSubmittedAt)) {
+      entry.lastSubmittedAt = submittedAt;
     }
 
     entry.displayName = row.discord_display_name;
@@ -259,7 +259,7 @@ export async function getLeaderboard(weekId?: string): Promise<LeaderboardEntry[
         right.board1TasksCompleted +
           right.board2TasksCompleted -
           (left.board1TasksCompleted + left.board2TasksCompleted) ||
-        Date.parse(left.firstSubmittedAt) - Date.parse(right.firstSubmittedAt)
+        Date.parse(left.lastSubmittedAt) - Date.parse(right.lastSubmittedAt)
     )
     .map((entry) => ({
       ...entry,
