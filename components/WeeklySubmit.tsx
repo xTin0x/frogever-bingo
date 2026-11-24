@@ -5,7 +5,6 @@ import Leaderboard from "@/components/Leaderboard";
 import {
   boardScore,
   formatWeekLabel,
-  formatWeekStartLabel,
   type Progress,
 } from "@/lib/bingo";
 
@@ -40,7 +39,6 @@ type WeeklySubmitProps = {
   progress: Progress;
   weekId: string;
   locked: boolean;
-  previewOnly: boolean;
   onAdminStatusChange: (isAdmin: boolean) => void;
   adminLeaderboardView: boolean;
 };
@@ -49,7 +47,6 @@ export default function WeeklySubmit({
   progress,
   weekId,
   locked,
-  previewOnly,
   onAdminStatusChange,
   adminLeaderboardView,
 }: WeeklySubmitProps) {
@@ -186,9 +183,7 @@ export default function WeeklySubmit({
 
       {locked ? (
         <p className="text-sm text-amber-200">
-          {previewOnly
-            ? `Submissions for this week open on ${formatWeekStartLabel(weekId)}.`
-            : "This week is closed. Past weeks are read-only."}
+          This week is closed. Past weeks are read-only.
         </p>
       ) : loading || me?.weekId !== weekId ? (
         <p className="text-sm text-gray-400">Checking Discord membership…</p>

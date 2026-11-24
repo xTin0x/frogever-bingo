@@ -311,7 +311,6 @@ export default function BingoBoard() {
           progress={progress}
           weekId={selectedWeekId}
           locked={locked}
-          previewOnly={!isWeekStarted(selectedWeekId)}
           onAdminStatusChange={handleAdminStatusChange}
           adminLeaderboardView={adminLeaderboardView}
         />
