@@ -11,6 +11,7 @@ import {
   FIRST_WEEK_ID,
   formatWeekLabel,
   formatWeekStartLabel,
+  getBoardMetadata,
   getWeekId,
   initialProgress,
   isBoardTasks,
@@ -267,6 +268,10 @@ export default function BingoBoard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
             {(Object.keys(boards) as BoardId[]).map((id) => {
               const completed = progress[id].filter(Boolean).length;
+              const boardMetadata = getBoardMetadata(
+                id,
+                selectedWeekId ?? ""
+              );
 
               return (
                 <button
@@ -283,11 +288,11 @@ export default function BingoBoard() {
                       completed === 9 ? "text-indigo-800" : "text-gray-600"
                     }`}
                   >
-                    {boards[id].title}
+                    {boardMetadata.title}
                   </h2>
 
                   <p className="text-sm text-gray-400 mb-4">
-                    {boards[id].description}
+                    {boardMetadata.description}
                   </p>
 
                   <p
@@ -343,7 +348,7 @@ export default function BingoBoard() {
         className="w-full max-w-[640px] bg-[#10251B] p-4 sm:p-6 rounded-x1"
       >
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
-          {boards[selectedBoard].title}
+          {getBoardMetadata(selectedBoard, selectedWeekId ?? "").title}
         </h1>
 
         <div className="mb-6 text-center">

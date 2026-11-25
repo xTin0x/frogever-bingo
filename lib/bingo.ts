@@ -15,6 +15,17 @@ export type BoardTasks = Record<BoardId, string[]>;
 
 export type Progress = Record<BoardId, boolean[]>;
 
+export function getBoardMetadata(boardId: BoardId, weekId: string) {
+  const board = boards[boardId];
+  if (boardId === "board2" && weekId === "2026-11-25") {
+    return {
+      title: "Personal Progression?",
+      description: `${board.description} and some whimsy`,
+    };
+  }
+  return board;
+}
+
 export const STORAGE_KEY = "bingo-progress";
 export const FIRST_WEEK_ID = "2026-11-04";
 
