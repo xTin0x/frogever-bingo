@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
+  arePastTasksUnlocked,
   boardScore,
   getWeekId,
   isProgress,
@@ -51,9 +52,12 @@ export async function POST(request: Request) {
   }
 
   const currentWeekId = getWeekId();
-  if (requestedWeekId !== currentWeekId) {
+  if (
+    requestedWeekId > currentWeekId ||
+    (requestedWeekId < currentWeekId && !arePastTasksUnlocked())
+  ) {
     return NextResponse.json(
-      { error: "Only the current week can be submitted." },
+      { error: "This week's tasks are still locked." },
       { status: 409 }
     );
   }

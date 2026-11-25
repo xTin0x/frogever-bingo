@@ -16,6 +16,7 @@ import {
   initialProgress,
   isBoardTasks,
   isProgress,
+  arePastTasksUnlocked,
   isWeekReadable,
   isWeekStarted,
   STORAGE_KEY,
@@ -141,7 +142,9 @@ export default function BingoBoard() {
   const locked =
     selectedWeekId !== null &&
     (!isWeekStarted(selectedWeekId) ||
-      (currentWeekId !== null && selectedWeekId < currentWeekId));
+      (currentWeekId !== null &&
+        selectedWeekId < currentWeekId &&
+        !arePastTasksUnlocked()));
   const boardReady =
     selectedWeekId !== null &&
     loadedTasksWeekId === selectedWeekId &&
@@ -465,9 +468,10 @@ function WeekSelector({
         <div className="text-center">
           <p className="text-xs uppercase tracking-wide text-gray-400">Week</p>
           <p className="font-bold">{formatWeekLabel(selectedWeekId)}</p>
-          {selectedWeekId < currentWeekId && (
+          {selectedWeekId < currentWeekId &&
+            !arePastTasksUnlocked() && (
             <p className="text-xs text-amber-200">Locked</p>
-          )}
+            )}
         </div>
         <button
           type="button"

@@ -28,6 +28,7 @@ export function getBoardMetadata(boardId: BoardId, weekId: string) {
 
 export const STORAGE_KEY = "bingo-progress";
 export const FIRST_WEEK_ID = "2026-11-04";
+export const PAST_TASKS_UNLOCK_WEEK_ID = "2026-11-25";
 
 const WEEK_LENGTH_MS = 7 * 24 * 60 * 60 * 1000;
 const WEEK_START_ANCHOR_MS = Date.parse("2026-11-04T23:00:00.000Z");
@@ -122,6 +123,10 @@ export function isWeekStarted(weekId: string, now = new Date()): boolean {
 export function isWeekReadable(weekId: string, now = new Date()): boolean {
   const currentWeekId = getWeekId(now);
   return weekId <= currentWeekId;
+}
+
+export function arePastTasksUnlocked(now = new Date()): boolean {
+  return now.getTime() >= getWeekStartTime(PAST_TASKS_UNLOCK_WEEK_ID);
 }
 
 function getWeekStartTime(weekId: string): number {
